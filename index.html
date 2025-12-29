@@ -1,134 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Penguin Love 🐧❤️</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Penguin Love 💕</title>
 
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      text-align: center;
-      font-family: "Comic Sans MS", cursive;
-      overflow: hidden;
-      background: linear-gradient(#ffd6d6, #ffe6f0);
-      position: relative;
-    }
-
-    h1 {
-      margin-top: 20px;
-      color: #ff4081;
-      font-size: 24px;
-    }
-
-    .names {
-      font-size: 20px;
-      color: #333;
-      margin-bottom: 10px;
-    }
-
-    .anniversary {
-      font-size: 16px;
-      color: #555;
-    }
-
-    .penguins {
-      width: 300px;
-      margin-top: 20px;
-      animation: pulse 2s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { transform: scale(1); }
-      to { transform: scale(1.05); }
-    }
-
-    .kiss, .heart {
-      position: absolute;
-      width: 50px;
-      animation: float 5s linear forwards;
-      pointer-events: none;
-    }
-
-    @keyframes float {
-      0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
-    }
-
-    .gallery {
-      width: 200px;
-      margin-top: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(255,0,100,0.5);
-    }
-
-    /* Penguin cuddle animation */
-@keyframes cuddle {
-  0%   { transform: scale(1) rotate(0deg); }
-  25%  { transform: scale(1.03) rotate(-1deg); }
-  50%  { transform: scale(1.05) rotate(0deg); }
-  75%  { transform: scale(1.03) rotate(1deg); }
-  100% { transform: scale(1) rotate(0deg); }
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(#ff9acb, #ffd6e7);
+  overflow: hidden;
+  font-family: "Comic Sans MS", cursive;
+  text-align: center;
 }
 
-/* Nose wiggle illusion */
-@keyframes noseWiggle {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(2px); }
-}
-
-/* Apply base penguin animation */
-.penguins {
-  width: 300px;
+h1 {
   margin-top: 20px;
-  animation: cuddle 3.5s ease-in-out infinite,
-             noseWiggle 1.8s ease-in-out infinite;
-  transform-origin: center bottom;
-  filter: drop-shadow(0 0 15px rgba(255, 64, 129, 0.6));
-}
-
-/* Heart pop */
-.pop-heart {
-  position: absolute;
-  font-size: 28px;
-  animation: popFloat 1.5s ease-out forwards;
-  pointer-events: none;
-}
-
-@keyframes popFloat {
-  0% { transform: scale(0.2) translateY(0); opacity: 1; }
-  100% { transform: scale(1.4) translateY(-80px); opacity: 0; }
-}
-
-    /* ✨ Background sparkles */
-.sparkle {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background: rgba(255,255,255,0.8);
-  border-radius: 50%;
-  animation: sparkleFall 6s linear forwards;
-  pointer-events: none;
-}
-
-@keyframes sparkleFall {
-  from { transform: translateY(-10vh); opacity: 1; }
-  to { transform: translateY(110vh); opacity: 0; }
-}
-
-/* 🐧 Penguin cuddle + nose wiggle */
-@keyframes cuddle {
-  0%   { transform: scale(1) rotate(0deg); }
-  25%  { transform: scale(1.03) rotate(-1deg); }
-  50%  { transform: scale(1.05) rotate(0deg); }
-  75%  { transform: scale(1.03) rotate(1deg); }
-  100% { transform: scale(1) rotate(0deg); }
-}
-
-@keyframes noseWiggle {
-  0%,100% { transform: translateX(0); }
-  50% { transform: translateX(2px); }
+  color: #fff;
+  text-shadow: 0 0 10px hotpink;
 }
 
 .penguins {
@@ -138,109 +28,80 @@
     cuddle 3.5s ease-in-out infinite,
     noseWiggle 1.8s ease-in-out infinite;
   transform-origin: center bottom;
-  filter: drop-shadow(0 0 18px rgba(255, 64, 129, 0.7));
+  filter: drop-shadow(0 0 18px rgba(255,64,129,0.7));
 }
 
-/* ❤️ Floating & popping hearts */
+.tap-cuddle {
+  animation: cuddle 1.2s ease-in-out !important;
+}
+
+@keyframes cuddle {
+  0% { transform: scale(1) rotate(0); }
+  25% { transform: scale(1.03) rotate(-1deg); }
+  50% { transform: scale(1.06); }
+  75% { transform: scale(1.03) rotate(1deg); }
+  100% { transform: scale(1); }
+}
+
+@keyframes noseWiggle {
+  0%,100% { transform: translateX(0); }
+  50% { transform: translateX(2px); }
+}
+
+.kiss {
+  position: absolute;
+  font-size: 30px;
+  animation: floatUp 6s linear forwards;
+}
+
+@keyframes floatUp {
+  from { transform: translateY(100vh); opacity: 1; }
+  to { transform: translateY(-100px); opacity: 0; }
+}
+
 .pop-heart {
   position: absolute;
-  font-size: 28px;
-  animation: popFloat 1.6s ease-out forwards;
+  font-size: 26px;
   pointer-events: none;
+  animation: popFloat 1.5s ease-out forwards;
 }
 
 @keyframes popFloat {
-  0% { transform: scale(0.2) translateY(0); opacity: 1; }
-  100% { transform: scale(1.5) translateY(-90px); opacity: 0; }
+  from { transform: scale(0.2); opacity: 1; }
+  to { transform: scale(1.4) translateY(-80px); opacity: 0; }
 }
 
-/* 💬 Love text */
-.love-text {
-  position: absolute;
-  width: 100%;
-  top: 15%;
-  text-align: center;
-  font-size: 22px;
-  color: #ff4081;
-  opacity: 0;
-  animation: fadeLove 4s ease-in-out forwards;
-  pointer-events: none;
+.photo {
+  width: 160px;
+  border-radius: 12px;
+  margin-top: 15px;
+  box-shadow: 0 0 15px hotpink;
 }
-
-@keyframes fadeLove {
-  0% { opacity: 0; }
-  30% { opacity: 1; }
-  70% { opacity: 1; }
-  100% { opacity: 0; }
-}
-  </style>
+</style>
 </head>
 
 <body>
-  <h1>Tap the screen to start your love 💖</h1>
-  <div class="names">Sarah ❤️ Ricardo</div>
-  <div class="anniversary">Anniversary: September 17, 2024</div>
 
-  <img src="penguins.png" class="penguins" alt="Penguins in love" />
-  <img id="gallery" class="gallery" src="photo1.jpg" alt="Gallery photo" />
+<h1>Sarah ❤️ Ricardo</h1>
+<p>Anniversary: September 17, 2024</p>
 
-  <audio id="music" src="music.mp3" loop></audio>
-  <audio id="voice" src="voice.mp3"></audio>
+<img src="penguins.png" class="penguins" alt="Penguins in love" />
 
-  <script>
-    const music = document.getElementById("music");
-    const voice = document.getElementById("voice");
-    const gallery = document.getElementById("gallery");
-    let photos = ["photo1.jpg","photo2.jpg","photo3.jpg"];
-    let photoIndex = 0;
+<br />
+<img id="photo" class="photo" src="photo1.jpg" />
 
-    function randomHeartColor() {
-      const colors = ["#ff4081","#ff80ab","#ff1a75","#ff6699"];
-      return colors[Math.floor(Math.random() * colors.length)];
-    }
+<audio id="music" src="music.mp3" loop></audio>
 
-    function startLove() {
-      music.play();
-      voice.play();
-      document.querySelector("h1").style.display = "none";
+<script>
+let started = false;
+const penguin = document.querySelector(".penguins");
+const music = document.getElementById("music");
+const photo = document.getElementById("photo");
 
-      // Floating kisses
-      setInterval(() => {
-        const kiss = document.createElement("img");
-        kiss.src = "kiss.png";
-        kiss.className = "kiss";
-        kiss.style.left = Math.random() * 100 + "vw";
-        kiss.style.width = 50 + Math.random()*20 + "px";
-        document.body.appendChild(kiss);
-        setTimeout(() => kiss.remove(), 5000);
-      }, 500);
+const photos = ["photo1.jpg", "photo2.jpg", "photo3.jpg"];
+let photoIndex = 0;
 
-      // Floating hearts
-      setInterval(() => {
-        const heart = document.createElement("div");
-        heart.className = "heart";
-        heart.innerHTML = "❤️";
-        heart.style.left = Math.random() * 100 + "vw";
-        heart.style.fontSize = 20 + Math.random()*30 + "px";
-        heart.style.color = randomHeartColor();
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 5000);
-      }, 700);
-
-      // Photo gallery cycle
-      setInterval(() => {
-        photoIndex = (photoIndex + 1) % photos.length;
-        gallery.src = photos[photoIndex];
-      }, 2000);
-
-      document.body.removeEventListener("touchstart", startLove);
-    }
-
-    document.body.addEventListener("touchstart", startLove, { once: true });
-
-    const penguin = document.querySelector(".penguins");
-
-/* ❤️ Hearts popping between penguins */
+/* ❤️ heart pop */
 function popHeart(x, y) {
   const heart = document.createElement("div");
   heart.className = "pop-heart";
@@ -251,87 +112,37 @@ function popHeart(x, y) {
   setTimeout(() => heart.remove(), 1500);
 }
 
-/* 💋 Automatic kiss hearts every 5 seconds */
-setInterval(() => {
-  const rect = penguin.getBoundingClientRect();
-  popHeart(
-    rect.left + rect.width / 2,
-    rect.top + rect.height / 2
-  );
-}, 5000);
-
-/* 🐧 React to tap */
-penguin.addEventListener("click", (e) => {
-  // Restart cuddle animation stronger
-  penguin.style.animation = "none";
-  penguin.offsetHeight;
-  penguin.style.animation =
-    "cuddle 1.2s ease-in-out, noseWiggle 0.6s ease-in-out";
-
-  // Burst of hearts
-  for (let i = 0; i < 5; i++) {
-    popHeart(
-      e.clientX + Math.random() * 30 - 15,
-      e.clientY + Math.random() * 30 - 15
-    );
-  }
-});
-
-    const penguin = document.querySelector(".penguins");
-
-/* ✨ Sparkle snowfall */
-setInterval(() => {
-  const s = document.createElement("div");
-  s.className = "sparkle";
-  s.style.left = Math.random() * 100 + "vw";
-  s.style.animationDuration = 4 + Math.random() * 4 + "s";
-  document.body.appendChild(s);
-  setTimeout(() => s.remove(), 6000);
-}, 300);
-
-/* ❤️ Heart pop helper */
-function popHeart(x, y) {
-  const h = document.createElement("div");
-  h.className = "pop-heart";
-  h.innerHTML = "❤️";
-  h.style.left = x + "px";
-  h.style.top = y + "px";
-  document.body.appendChild(h);
-  setTimeout(() => h.remove(), 1600);
+/* 💋 floating kisses */
+function createKiss() {
+  const kiss = document.createElement("div");
+  kiss.className = "kiss";
+  kiss.innerHTML = "💋";
+  kiss.style.left = Math.random() * 100 + "vw";
+  document.body.appendChild(kiss);
+  setTimeout(() => kiss.remove(), 6000);
 }
 
-/* 💋 Automatic kiss every 5 seconds */
-setInterval(() => {
-  const r = penguin.getBoundingClientRect();
-  popHeart(
-    r.left + r.width / 2,
-    r.top + r.height / 2
-  );
-}, 5000);
+/* 🌟 start app */
+function startLove() {
+  if (started) return;
+  started = true;
 
-/* 💬 Love messages */
-const messages = [
-  "I love you Sarah 💖",
-  "You are my forever 🐧❤️",
-  "Always us, always love",
-  "Ricardo ❤️ Sarah",
-  "My heart chose you"
-];
+  music.play();
 
-setInterval(() => {
-  const t = document.createElement("div");
-  t.className = "love-text";
-  t.innerText = messages[Math.floor(Math.random() * messages.length)];
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 4000);
-}, 7000);
+  setInterval(createKiss, 800);
+  setInterval(() => {
+    photoIndex = (photoIndex + 1) % photos.length;
+    photo.src = photos[photoIndex];
+  }, 4000);
+}
 
-/* 🐧 Tap reaction */
+/* 🐧 tap interaction */
 penguin.addEventListener("click", (e) => {
-  penguin.style.animation = "none";
-  penguin.offsetHeight;
-  penguin.style.animation =
-    "cuddle 1.2s ease-in-out, noseWiggle 0.6s ease-in-out";
+  startLove();
+
+  penguin.classList.remove("tap-cuddle");
+  void penguin.offsetWidth;
+  penguin.classList.add("tap-cuddle");
 
   for (let i = 0; i < 6; i++) {
     popHeart(
@@ -340,6 +151,7 @@ penguin.addEventListener("click", (e) => {
     );
   }
 });
-  </script>
+</script>
+
 </body>
 </html>
