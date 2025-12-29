@@ -62,6 +62,44 @@
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(255,0,100,0.5);
     }
+
+    /* Penguin cuddle animation */
+@keyframes cuddle {
+  0%   { transform: scale(1) rotate(0deg); }
+  25%  { transform: scale(1.03) rotate(-1deg); }
+  50%  { transform: scale(1.05) rotate(0deg); }
+  75%  { transform: scale(1.03) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Nose wiggle illusion */
+@keyframes noseWiggle {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(2px); }
+}
+
+/* Apply base penguin animation */
+.penguins {
+  width: 300px;
+  margin-top: 20px;
+  animation: cuddle 3.5s ease-in-out infinite,
+             noseWiggle 1.8s ease-in-out infinite;
+  transform-origin: center bottom;
+  filter: drop-shadow(0 0 15px rgba(255, 64, 129, 0.6));
+}
+
+/* Heart pop */
+.pop-heart {
+  position: absolute;
+  font-size: 28px;
+  animation: popFloat 1.5s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes popFloat {
+  0% { transform: scale(0.2) translateY(0); opacity: 1; }
+  100% { transform: scale(1.4) translateY(-80px); opacity: 0; }
+}
   </style>
 </head>
 
@@ -126,6 +164,45 @@
     }
 
     document.body.addEventListener("touchstart", startLove, { once: true });
+
+    const penguin = document.querySelector(".penguins");
+
+/* ❤️ Hearts popping between penguins */
+function popHeart(x, y) {
+  const heart = document.createElement("div");
+  heart.className = "pop-heart";
+  heart.innerHTML = "❤️";
+  heart.style.left = x + "px";
+  heart.style.top = y + "px";
+  document.body.appendChild(heart);
+  setTimeout(() => heart.remove(), 1500);
+}
+
+/* 💋 Automatic kiss hearts every 5 seconds */
+setInterval(() => {
+  const rect = penguin.getBoundingClientRect();
+  popHeart(
+    rect.left + rect.width / 2,
+    rect.top + rect.height / 2
+  );
+}, 5000);
+
+/* 🐧 React to tap */
+penguin.addEventListener("click", (e) => {
+  // Restart cuddle animation stronger
+  penguin.style.animation = "none";
+  penguin.offsetHeight;
+  penguin.style.animation =
+    "cuddle 1.2s ease-in-out, noseWiggle 0.6s ease-in-out";
+
+  // Burst of hearts
+  for (let i = 0; i < 5; i++) {
+    popHeart(
+      e.clientX + Math.random() * 30 - 15,
+      e.clientY + Math.random() * 30 - 15
+    );
+  }
+});
   </script>
 </body>
 </html>
