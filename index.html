@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Penguin Love 🐧❤️</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      font-family: "Comic Sans MS", cursive;
+      overflow: hidden;
+      background: linear-gradient(#ffd6d6, #ffe6f0);
+      position: relative;
+    }
+
+    h1 {
+      margin-top: 20px;
+      color: #ff4081;
+      font-size: 24px;
+    }
+
+    .names {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .anniversary {
+      font-size: 16px;
+      color: #555;
+    }
+
+    .penguins {
+      width: 300px;
+      margin-top: 20px;
+      animation: pulse 2s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    .kiss, .heart {
+      position: absolute;
+      width: 50px;
+      animation: float 5s linear forwards;
+      pointer-events: none;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+    }
+
+    .gallery {
+      width: 200px;
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255,0,100,0.5);
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Tap the screen to start your love 💖</h1>
+  <div class="names">Sarah ❤️ Ricardo</div>
+  <div class="anniversary">Anniversary: September 17, 2024</div>
+
+  <img src="penguins.png" class="penguins" alt="Penguins in love" />
+  <img id="gallery" class="gallery" src="photo1.jpg" alt="Gallery photo" />
+
+  <audio id="music" src="music.mp3" loop></audio>
+  <audio id="voice" src="voice.mp3"></audio>
+
+  <script>
+    const music = document.getElementById("music");
+    const voice = document.getElementById("voice");
+    const gallery = document.getElementById("gallery");
+    let photos = ["photo1.jpg","photo2.jpg","photo3.jpg"];
+    let photoIndex = 0;
+
+    function randomHeartColor() {
+      const colors = ["#ff4081","#ff80ab","#ff1a75","#ff6699"];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function startLove() {
+      music.play();
+      voice.play();
+      document.querySelector("h1").style.display = "none";
+
+      // Floating kisses
+      setInterval(() => {
+        const kiss = document.createElement("img");
+        kiss.src = "kiss.png";
+        kiss.className = "kiss";
+        kiss.style.left = Math.random() * 100 + "vw";
+        kiss.style.width = 50 + Math.random()*20 + "px";
+        document.body.appendChild(kiss);
+        setTimeout(() => kiss.remove(), 5000);
+      }, 500);
+
+      // Floating hearts
+      setInterval(() => {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.innerHTML = "❤️";
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.fontSize = 20 + Math.random()*30 + "px";
+        heart.style.color = randomHeartColor();
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 5000);
+      }, 700);
+
+      // Photo gallery cycle
+      setInterval(() => {
+        photoIndex = (photoIndex + 1) % photos.length;
+        gallery.src = photos[photoIndex];
+      }, 2000);
+
+      document.body.removeEventListener("touchstart", startLove);
+    }
+
+    document.body.addEventListener("touchstart", startLove, { once: true });
+  </script>
+</body>
+</html>
