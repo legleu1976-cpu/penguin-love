@@ -100,6 +100,79 @@
   0% { transform: scale(0.2) translateY(0); opacity: 1; }
   100% { transform: scale(1.4) translateY(-80px); opacity: 0; }
 }
+
+    /* ✨ Background sparkles */
+.sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  animation: sparkleFall 6s linear forwards;
+  pointer-events: none;
+}
+
+@keyframes sparkleFall {
+  from { transform: translateY(-10vh); opacity: 1; }
+  to { transform: translateY(110vh); opacity: 0; }
+}
+
+/* 🐧 Penguin cuddle + nose wiggle */
+@keyframes cuddle {
+  0%   { transform: scale(1) rotate(0deg); }
+  25%  { transform: scale(1.03) rotate(-1deg); }
+  50%  { transform: scale(1.05) rotate(0deg); }
+  75%  { transform: scale(1.03) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes noseWiggle {
+  0%,100% { transform: translateX(0); }
+  50% { transform: translateX(2px); }
+}
+
+.penguins {
+  width: 300px;
+  margin-top: 20px;
+  animation:
+    cuddle 3.5s ease-in-out infinite,
+    noseWiggle 1.8s ease-in-out infinite;
+  transform-origin: center bottom;
+  filter: drop-shadow(0 0 18px rgba(255, 64, 129, 0.7));
+}
+
+/* ❤️ Floating & popping hearts */
+.pop-heart {
+  position: absolute;
+  font-size: 28px;
+  animation: popFloat 1.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes popFloat {
+  0% { transform: scale(0.2) translateY(0); opacity: 1; }
+  100% { transform: scale(1.5) translateY(-90px); opacity: 0; }
+}
+
+/* 💬 Love text */
+.love-text {
+  position: absolute;
+  width: 100%;
+  top: 15%;
+  text-align: center;
+  font-size: 22px;
+  color: #ff4081;
+  opacity: 0;
+  animation: fadeLove 4s ease-in-out forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeLove {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
   </style>
 </head>
 
@@ -200,6 +273,70 @@ penguin.addEventListener("click", (e) => {
     popHeart(
       e.clientX + Math.random() * 30 - 15,
       e.clientY + Math.random() * 30 - 15
+    );
+  }
+});
+
+    const penguin = document.querySelector(".penguins");
+
+/* ✨ Sparkle snowfall */
+setInterval(() => {
+  const s = document.createElement("div");
+  s.className = "sparkle";
+  s.style.left = Math.random() * 100 + "vw";
+  s.style.animationDuration = 4 + Math.random() * 4 + "s";
+  document.body.appendChild(s);
+  setTimeout(() => s.remove(), 6000);
+}, 300);
+
+/* ❤️ Heart pop helper */
+function popHeart(x, y) {
+  const h = document.createElement("div");
+  h.className = "pop-heart";
+  h.innerHTML = "❤️";
+  h.style.left = x + "px";
+  h.style.top = y + "px";
+  document.body.appendChild(h);
+  setTimeout(() => h.remove(), 1600);
+}
+
+/* 💋 Automatic kiss every 5 seconds */
+setInterval(() => {
+  const r = penguin.getBoundingClientRect();
+  popHeart(
+    r.left + r.width / 2,
+    r.top + r.height / 2
+  );
+}, 5000);
+
+/* 💬 Love messages */
+const messages = [
+  "I love you Sarah 💖",
+  "You are my forever 🐧❤️",
+  "Always us, always love",
+  "Ricardo ❤️ Sarah",
+  "My heart chose you"
+];
+
+setInterval(() => {
+  const t = document.createElement("div");
+  t.className = "love-text";
+  t.innerText = messages[Math.floor(Math.random() * messages.length)];
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}, 7000);
+
+/* 🐧 Tap reaction */
+penguin.addEventListener("click", (e) => {
+  penguin.style.animation = "none";
+  penguin.offsetHeight;
+  penguin.style.animation =
+    "cuddle 1.2s ease-in-out, noseWiggle 0.6s ease-in-out";
+
+  for (let i = 0; i < 6; i++) {
+    popHeart(
+      e.clientX + Math.random() * 40 - 20,
+      e.clientY + Math.random() * 40 - 20
     );
   }
 });
