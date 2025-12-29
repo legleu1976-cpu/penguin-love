@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Penguin Love 💕</title>
 
 <style>
@@ -10,23 +10,18 @@ body {
   margin: 0;
   height: 100vh;
   background: linear-gradient(#ff9acb, #ffd6e7);
-  overflow: hidden;
-  font-family: "Comic Sans MS", cursive;
+  font-family: sans-serif;
   text-align: center;
+  overflow: hidden;
 }
 
-h1 {
-  margin-top: 20px;
-  color: #fff;
-  text-shadow: 0 0 10px hotpink;
-}
+h1 { margin-top:20px; color:#fff; text-shadow:0 0 10px hotpink; }
+p { color:#fff; }
 
 .penguins {
   width: 300px;
   margin-top: 20px;
-  animation:
-    cuddle 3.5s ease-in-out infinite,
-    noseWiggle 1.8s ease-in-out infinite;
+  animation: cuddle 3.5s ease-in-out infinite, noseWiggle 1.8s ease-in-out infinite;
   transform-origin: center bottom;
   filter: drop-shadow(0 0 18px rgba(255,64,129,0.7));
 }
@@ -36,11 +31,11 @@ h1 {
 }
 
 @keyframes cuddle {
-  0% { transform: scale(1) rotate(0); }
+  0% { transform: scale(1) rotate(0deg); }
   25% { transform: scale(1.03) rotate(-1deg); }
-  50% { transform: scale(1.06); }
+  50% { transform: scale(1.05) rotate(0deg); }
   75% { transform: scale(1.03) rotate(1deg); }
-  100% { transform: scale(1); }
+  100% { transform: scale(1) rotate(0deg); }
 }
 
 @keyframes noseWiggle {
@@ -48,6 +43,7 @@ h1 {
   50% { transform: translateX(2px); }
 }
 
+/* Floating kisses */
 .kiss {
   position: absolute;
   font-size: 30px;
@@ -55,27 +51,60 @@ h1 {
 }
 
 @keyframes floatUp {
-  from { transform: translateY(100vh); opacity: 1; }
-  to { transform: translateY(-100px); opacity: 0; }
+  from { transform: translateY(100vh); opacity:1; }
+  to { transform: translateY(-100px); opacity:0; }
 }
 
+/* Pop hearts */
 .pop-heart {
   position: absolute;
-  font-size: 26px;
+  font-size: 28px;
   pointer-events: none;
   animation: popFloat 1.5s ease-out forwards;
 }
 
 @keyframes popFloat {
-  from { transform: scale(0.2); opacity: 1; }
-  to { transform: scale(1.4) translateY(-80px); opacity: 0; }
+  0% { transform: scale(0.2); opacity:1; }
+  100% { transform: scale(1.4) translateY(-80px); opacity:0; }
 }
 
-.photo {
-  width: 160px;
-  border-radius: 12px;
-  margin-top: 15px;
-  box-shadow: 0 0 15px hotpink;
+/* Photos */
+.photo { width:160px; border-radius:12px; margin-top:15px; }
+
+/* Sparkles */
+.sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  animation: sparkleFall 5s linear forwards;
+  pointer-events: none;
+}
+
+@keyframes sparkleFall {
+  from { transform: translateY(-10vh); opacity:1; }
+  to { transform: translateY(110vh); opacity:0; }
+}
+
+/* Love messages */
+.love-text {
+  position: absolute;
+  width: 100%;
+  top: 15%;
+  text-align: center;
+  font-size: 22px;
+  color: #ff4081;
+  opacity: 0;
+  animation: fadeLove 4s ease-in-out forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeLove {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
 }
 </style>
 </head>
@@ -85,71 +114,91 @@ h1 {
 <h1>Sarah ❤️ Ricardo</h1>
 <p>Anniversary: September 17, 2024</p>
 
-<img src="penguins.png" class="penguins" alt="Penguins in love" />
+<img src="penguins.png" class="penguins" alt="Penguins in love">
+<br>
+<img id="photo" class="photo" src="photo1.jpg">
 
-<br />
-<img id="photo" class="photo" src="photo1.jpg" />
+<button id="startBtn" style="padding:12px 20px; font-size:18px; margin-top:20px;">💖 Tap to Start Love 💖</button>
 
 <audio id="music" src="music.mp3" loop></audio>
+<audio id="kissSound" src="kiss.mp3"></audio>
 
 <script>
-let started = false;
-const penguin = document.querySelector(".penguins");
+const startBtn = document.getElementById("startBtn");
 const music = document.getElementById("music");
+const kissSound = document.getElementById("kissSound");
+const penguin = document.querySelector(".penguins");
 const photo = document.getElementById("photo");
 
-const photos = ["photo1.jpg", "photo2.jpg", "photo3.jpg"];
+const photos = ["photo1.jpg","photo2.jpg","photo3.jpg"];
 let photoIndex = 0;
 
-/* ❤️ heart pop */
-function popHeart(x, y) {
+/* Pop hearts helper */
+function popHeart(x,y){
   const heart = document.createElement("div");
-  heart.className = "pop-heart";
-  heart.innerHTML = "❤️";
-  heart.style.left = x + "px";
-  heart.style.top = y + "px";
+  heart.className="pop-heart";
+  heart.innerHTML="❤️";
+  heart.style.left=x+"px";
+  heart.style.top=y+"px";
   document.body.appendChild(heart);
-  setTimeout(() => heart.remove(), 1500);
+  setTimeout(()=>heart.remove(),1500);
 }
 
-/* 💋 floating kisses */
-function createKiss() {
+/* Floating kisses */
+function createKiss(){
   const kiss = document.createElement("div");
-  kiss.className = "kiss";
-  kiss.innerHTML = "💋";
-  kiss.style.left = Math.random() * 100 + "vw";
+  kiss.className="kiss";
+  kiss.innerHTML="💋";
+  kiss.style.left=Math.random()*100+"vw";
   document.body.appendChild(kiss);
-  setTimeout(() => kiss.remove(), 6000);
+  setTimeout(()=>kiss.remove(),6000);
 }
 
-/* 🌟 start app */
-function startLove() {
-  if (started) return;
-  started = true;
+/* Sparkles */
+setInterval(()=>{
+  const s=document.createElement("div");
+  s.className="sparkle";
+  s.style.left=Math.random()*100+"vw";
+  s.style.animationDuration=(4+Math.random()*3)+"s";
+  document.body.appendChild(s);
+  setTimeout(()=>s.remove(),7000);
+},300);
 
+/* Love messages */
+const messages = ["I love you Sarah 💖","Forever us 🐧❤️","Always my heart","Ricardo ❤️ Sarah","My love for you"];
+setInterval(()=>{
+  const t=document.createElement("div");
+  t.className="love-text";
+  t.innerText=messages[Math.floor(Math.random()*messages.length)];
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),4000);
+},7000);
+
+/* Start app safely */
+startBtn.addEventListener("click",()=>{
   music.play();
+  startBtn.style.display="none";
 
-  setInterval(createKiss, 800);
-  setInterval(() => {
-    photoIndex = (photoIndex + 1) % photos.length;
-    photo.src = photos[photoIndex];
-  }, 4000);
-}
+  setInterval(createKiss,800);
 
-/* 🐧 tap interaction */
-penguin.addEventListener("click", (e) => {
-  startLove();
+  setInterval(()=>{
+    photoIndex = (photoIndex+1)%photos.length;
+    photo.src=photos[photoIndex];
+  },4000);
+});
 
-  penguin.classList.remove("tap-cuddle");
-  void penguin.offsetWidth;
-  penguin.classList.add("tap-cuddle");
+/* Penguin tap effect */
+penguin.addEventListener("click",(e)=>{
+  penguin.style.animation="none";
+  penguin.offsetWidth;
+  penguin.style.animation="cuddle 1.2s ease-in-out, noseWiggle 0.6s ease-in-out";
 
-  for (let i = 0; i < 6; i++) {
-    popHeart(
-      e.clientX + Math.random() * 40 - 20,
-      e.clientY + Math.random() * 40 - 20
-    );
+  for(let i=0;i<6;i++){
+    popHeart(e.clientX + Math.random()*40-20, e.clientY + Math.random()*40-20);
   }
+
+  kissSound.currentTime=0;
+  kissSound.play();
 });
 </script>
 
