@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penguin Love</title>
+
+<style>
+body {
+  margin:0;
+  font-family: Arial, sans-serif;
+  text-align:center;
+  overflow:hidden;
+  background:linear-gradient(#fff0f5,#ffe6ee);
+}
+
+.night { background:linear-gradient(#0d1b2a,#1b263b); color:#fff; }
+
+h1 { color:#ff69b4; }
+h2 { color:#ff0000; }
+h3 { color:#ffa500; }
+
+#penguins { width:70%; max-width:300px; margin-top:30px; }
+
+button {
+  padding:10px 20px;
+  margin:5px;
+  border:none;
+  border-radius:20px;
+  background:#ff69b4;
+  color:white;
+}
+
+.kiss {
+  position:absolute;
+  opacity:.85;
+  animation:float 4s linear forwards;
+}
+
+@keyframes float {
+  0% { transform:translateY(0) rotate(0); }
+  100% { transform:translateY(-600px) rotate(360deg); opacity:0; }
+}
+
+.panel {
+  display:none;
+  background:white;
+  border-radius:20px;
+  padding:20px;
+  margin:15px;
+}
+
+img.slide { width:85%; border-radius:20px; }
+
+canvas { position:absolute; top:0; left:0; pointer-events:none; }
+</style>
+</head>
+
+<body>
+
+<img id="penguins" src="penguins.png">
+<h1>Sarah & Ricardo</h1>
+<h2 id="daily"></h2>
+<h3 id="anniv"></h3>
+<h3 id="countdown"></h3>
+
+<button onclick="unlock()">🔐 Secret</button>
+<button onclick="playVoice()">🎤 Voice</button>
+<button onclick="showSlides()">🖼️ Memories</button>
+
+<div id="secret" class="panel">
+  <h2>💌 Forever</h2>
+  <p>
+    You are my home, my calm, my always.
+    I would choose you in every lifetime,
+    every version of me, every universe.
+  </p>
+</div>
+
+<div id="voice" class="panel">
+  <audio controls>
+    <source src="voice.mp3" type="audio/mpeg">
+  </audio>
+</div>
+
+<div id="slides" class="panel">
+  <img id="slide" class="slide">
+</div>
+
+<audio autoplay loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<canvas id="fireworks"></canvas>
+
+<script>
+// DAILY MESSAGES
+const messages=[
+"I love you more every day 💖",
+"You are my forever 🐧",
+"My heart belongs to you ❤️",
+"Every kiss is yours 💋",
+"I choose you. Always."
+];
+daily.innerText=messages[new Date().getDate()%messages.length];
+
+// ANNIVERSARY + COUNTDOWN
+const ann=new Date("2024-09-17");
+const now=new Date();
+
+if(now.getMonth()==ann.getMonth() && now.getDate()==ann.getDate()){
+  anniv.innerText="🎉 HAPPY ANNIVERSARY MY LOVE 🎉";
+  fireworks();
+} else {
+  anniv.innerText="Our Anniversary: September 17, 2024";
+}
+
+const next=new Date(now.getFullYear()+1,ann.getMonth(),ann.getDate());
+countdown.innerText=
+"Next anniversary in "+Math.ceil((next-now)/86400000)+" days 💞";
+
+// SECRET
+function unlock(){
+  if(prompt("Our password 💖")==="sarahricardo"){
+    secret.style.display="block";
+  }
+}
+
+// VOICE
+function playVoice(){ voice.style.display="block"; }
+
+// SLIDESHOW
+let photos=["photo1.jpg","photo2.jpg","photo3.jpg"];
+let i=0;
+function showSlides(){
+  slides.style.display="block";
+  setInterval(()=>{
+    slide.src=photos[i%photos.length]; i++;
+  },2500);
+}
+
+// KISSES
+function kiss(){
+  let k=document.createElement("img");
+  k.src="kiss.png"; k.className="kiss";
+  k.style.left=Math.random()*innerWidth+"px";
+  k.style.top=innerHeight+"px";
+  k.style.width=25+Math.random()*35+"px";
+  document.body.appendChild(k);
+  setTimeout(()=>k.remove(),4000);
+}
+setInterval(kiss,250);
+
+// NIGHT MODE
+if(now.getHours()>=20||now.getHours()<6)
+  document.body.classList.add("night");
+
+// LOCATION SURPRISE
+if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(pos=>{
+    if(pos.coords.latitude){ // simple trigger
+      daily.innerText+=" 🏠";
+    }
+  });
+}
+
+// FIREWORKS
+function fireworks(){
+  const c=document.getElementById("fireworks");
+  const x=c.getContext("2d");
+  c.width=innerWidth; c.height=innerHeight;
+  setInterval(()=>{
+    x.clearRect(0,0,c.width,c.height);
+    for(let i=0;i<30;i++){
+      x.beginPath();
+      x.arc(Math.random()*c.width,Math.random()*c.height,3,0,6.28);
+      x.fillStyle=`hsl(${Math.random()*360},100%,50%)`;
+      x.fill();
+    }
+  },300);
+}
+</script>
+
+</body>
+</html>
