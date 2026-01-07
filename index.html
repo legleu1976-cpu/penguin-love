@@ -1,4 +1,142 @@
-/* Theme Bottom Sheet */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Penguin Love 🐧❤️</title>
+
+<style>
+:root{
+  --bg1:#ffd6e8;
+  --bg2:#fff0f7;
+  --accent:#ff4081;
+  --text:#111;
+  --font:"Comic Sans MS", cursive;
+  --msgBg: rgba(0,0,0,0.35);
+}
+
+body{
+  margin:0;
+  text-align:center;
+  font-family: var(--font);
+  background: linear-gradient(var(--bg1), var(--bg2));
+  color: var(--text);
+  overflow:hidden;
+}
+
+.hidden{display:none;}
+
+button{
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 16px;
+  margin: 6px;
+}
+
+.penguins{
+  width: 280px;
+  animation: pulse 2s infinite alternate;
+  cursor: pointer;
+}
+@keyframes pulse{ from{transform:scale(1);} to{transform:scale(1.06);} }
+
+.float{
+  position:absolute;
+  animation: rise 6s linear forwards;
+  pointer-events:none;
+}
+@keyframes rise{
+  from{ transform: translateY(110vh) rotate(0deg); opacity:1; }
+  to{ transform: translateY(-20vh) rotate(360deg); opacity:0; }
+}
+
+.popup{
+  position:fixed; inset:0;
+  background: rgba(255,182,213,.96);
+  display:flex; align-items:center; justify-content:center;
+  z-index: 999;
+}
+.box{
+  background:white;
+  padding: 20px;
+  border-radius: 15px;
+  width: 82%;
+  max-width: 420px;
+  box-shadow: 0 0 25px rgba(255,0,120,0.25);
+}
+
+.signature{
+  position:fixed;
+  bottom: 8px;
+  width:100%;
+  font-size: 14px;
+  color: rgba(0,0,0,0.55);
+}
+
+.timeline{
+  max-height: 120px;
+  overflow: auto;
+  margin: 10px auto;
+  font-size: 14px;
+  width: 90%;
+  max-width: 520px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.meter{
+  width: 80%;
+  height: 12px;
+  background:#eee;
+  margin: 10px auto;
+  border-radius: 10px;
+  overflow:hidden;
+  max-width: 520px;
+}
+.fill{
+  height:100%;
+  width:0;
+  background: var(--accent);
+  border-radius: 10px;
+}
+
+.gallery-container{
+  position: relative;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+#gallery{
+  width: 220px;
+  border-radius: 12px;
+  transition: opacity 1s;
+  box-shadow: 0 0 20px rgba(255,0,120,0.20);
+}
+
+#photoMessage{
+  position:absolute;
+  bottom: 5px;
+  width:100%;
+  padding: 6px 0;
+  background: var(--msgBg);
+  color: white;
+  text-shadow: 0 0 5px rgba(0,0,0,0.65);
+  font-size: 14px;
+  transition: opacity 1s;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.smallBtn{
+  padding: 9px 14px;
+  font-size: 15px;
+}
+
+/* ===== Theme Bottom Sheet ===== */
 #sheetOverlay{
   position: fixed;
   inset: 0;
@@ -13,7 +151,7 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: -320px;              /* hidden off-screen */
+  bottom: -320px;
   background: rgba(255,255,255,0.92);
   border-top-left-radius: 18px;
   border-top-right-radius: 18px;
@@ -23,9 +161,7 @@
   z-index: 999;
 }
 
-#themeSheet.open{
-  bottom: 0;                   /* slides up */
-}
+#themeSheet.open{ bottom: 0; }
 
 .sheetHandle{
   width: 44px;
@@ -55,3 +191,298 @@
   color: #111;
   font-size: 16px;
 }
+</style>
+</head>
+
+<body>
+
+<!-- PASSWORD LOCK -->
+<div class="popup" id="lock">
+  <div class="box">
+    <h2>🐧 Secret Love 🐧</h2>
+    <p>What’s our word?</p>
+    <input id="pw" type="password" style="padding:10px 12px;border-radius:12px;border:1px solid #ddd;width:80%;max-width:260px;">
+    <br><br>
+    <button onclick="unlock()">Enter</button>
+    <p style="font-size:12px;opacity:.7;margin-top:12px;">Tip: tap “Enter” after typing.</p>
+  </div>
+</div>
+
+<!-- HEADER -->
+<h2>Sarah ❤️ Ricardo</h2>
+<p style="margin-top:-6px;">Anniversary: September 17, 2024</p>
+<p id="countdown" style="margin-top:-6px;"></p>
+
+<!-- PENGUINS -->
+<img src="penguins.png" class="penguins" onclick="penguinTap()" alt="Penguins in love">
+
+<!-- HEART METER -->
+<div class="meter"><div id="fill" class="fill"></div></div>
+
+<!-- PHOTO GALLERY -->
+<div class="gallery-container">
+  <img id="gallery" src="photo1.jpg" alt="Memories">
+  <div id="photoMessage">Our first memory together 💖</div>
+  <div style="margin-top:10px;">
+    <button class="smallBtn" onclick="prevPhoto()">⏮ Previous</button>
+    <button class="smallBtn" onclick="nextPhoto()">Next ⏭</button>
+  </div>
+</div>
+
+<!-- MAIN BUTTONS -->
+<div style="margin-top:10px;">
+  <button onclick="playVoice()">Hear My Voice</button>
+  <button onclick="loveNote()">Love Note</button>
+  <button onclick="openThemeSheet()">Themes</button>
+  <button id="musicBtn" onclick="toggleMusic()">Play Music</button>
+</div>
+
+<!-- TIMELINE -->
+<div class="timeline">
+  💕 First kiss<br>
+  ✈️ First trip<br>
+  🐧 First penguin love app<br>
+  ❤️ Forever
+</div>
+
+<div class="signature">Forever Yours — Ricardo</div>
+
+<!-- AUDIO -->
+<audio id="music" src="music.mp3" loop></audio>
+<audio id="voice" src="voice.mp3"></audio>
+
+<!-- THEME SHEET -->
+<div id="sheetOverlay" onclick="closeThemeSheet()"></div>
+
+<div id="themeSheet" aria-hidden="true">
+  <div class="sheetHandle"></div>
+  <p class="sheetTitle">Choose a theme</p>
+  <div class="sheetRow">
+    <button class="sheetBtn" onclick="setTheme(0)">🐧 Penguin</button>
+    <button class="sheetBtn" onclick="setTheme(1)">❤️ Heart</button>
+    <button class="sheetBtn" onclick="setTheme(2)">🍷 Wine</button>
+  </div>
+  <div style="margin-top:12px;">
+    <button onclick="closeThemeSheet()">Close</button>
+  </div>
+</div>
+
+<script>
+// ================== SETTINGS YOU CAN EDIT ==================
+const SECRET = "love";          // password
+let photoSpeed = 8000;          // auto-rotate speed in ms (slower = bigger number)
+// ===========================================================
+
+// Elements
+const music = document.getElementById("music");
+const voice = document.getElementById("voice");
+const musicBtn = document.getElementById("musicBtn");
+const fill = document.getElementById("fill");
+const gallery = document.getElementById("gallery");
+const photoMessage = document.getElementById("photoMessage");
+const sheetOverlay = document.getElementById("sheetOverlay");
+const themeSheet = document.getElementById("themeSheet");
+
+// ===== THEMES =====
+const THEMES = [
+  {
+    name: "🐧 Penguin",
+    bg1: "#b3e5fc",
+    bg2: "#e1f5fe",
+    accent: "#1565c0",
+    text: "#0b1b2b",
+    font: '"Trebuchet MS", Arial, sans-serif',
+    msgBg: "rgba(21,101,192,0.45)",
+    floats: ["🐧","❄️","✨"]
+  },
+  {
+    name: "❤️ Heart",
+    bg1: "#ffd6e8",
+    bg2: "#fff0f7",
+    accent: "#ff4081",
+    text: "#2a0b14",
+    font: '"Comic Sans MS", cursive',
+    msgBg: "rgba(255,64,129,0.45)",
+    floats: ["❤️","💖","✨"]
+  },
+  {
+    name: "🍷 Wine",
+    bg1: "#2b0b17",
+    bg2: "#4b1230",
+    accent: "#c2185b",
+    text: "#fff5f8",
+    font: 'Georgia, "Times New Roman", serif',
+    msgBg: "rgba(194,24,91,0.45)",
+    floats: ["🍷","🥂","✨"]
+  }
+];
+
+let themeIndex = 1; // default theme (0=🐧,1=❤️,2=🍷)
+
+function applyTheme(idx){
+  const t = THEMES[idx];
+  document.documentElement.style.setProperty("--bg1", t.bg1);
+  document.documentElement.style.setProperty("--bg2", t.bg2);
+  document.documentElement.style.setProperty("--accent", t.accent);
+  document.documentElement.style.setProperty("--text", t.text);
+  document.documentElement.style.setProperty("--font", t.font);
+  document.documentElement.style.setProperty("--msgBg", t.msgBg);
+  themeIndex = idx;
+}
+
+// ===== THEME BOTTOM SHEET =====
+function openThemeSheet(){
+  sheetOverlay.style.display = "block";
+  themeSheet.classList.add("open");
+  themeSheet.setAttribute("aria-hidden","false");
+}
+function closeThemeSheet(){
+  themeSheet.classList.remove("open");
+  themeSheet.setAttribute("aria-hidden","true");
+  setTimeout(()=>{ sheetOverlay.style.display = "none"; }, 200);
+}
+function setTheme(idx){
+  applyTheme(idx);
+  closeThemeSheet();
+}
+
+// ===== PASSWORD UNLOCK =====
+let autoRotate;
+let floatsInterval;
+
+function unlock(){
+  if(document.getElementById("pw").value === SECRET){
+    document.getElementById("lock").style.display = "none";
+
+    // apply default theme on unlock
+    applyTheme(themeIndex);
+
+    // start music
+    if(music.paused){
+      music.play().catch(()=>{});
+      musicBtn.innerText = "Pause Music";
+    }
+
+    // start floaties
+    floatsInterval = setInterval(spawn, 550);
+
+    // start auto rotation
+    autoRotate = setInterval(nextPhoto, photoSpeed);
+  }
+}
+
+// ===== MUSIC TOGGLE =====
+function toggleMusic(){
+  if(music.paused){
+    music.play().catch(()=>{});
+    musicBtn.innerText = "Pause Music";
+  } else {
+    music.pause();
+    musicBtn.innerText = "Play Music";
+  }
+}
+
+// ===== VOICE (auto-pauses music) =====
+function playVoice(){
+  if(!music.paused){
+    music.pause();
+    musicBtn.innerText = "Play Music";
+  }
+  voice.currentTime = 0;
+  voice.play().catch(()=>{});
+}
+
+// ===== LOVE NOTES =====
+function loveNote(){
+  const notes = [
+    "You are my favorite person ❤️",
+    "I’d choose you in every lifetime 💫",
+    "My heart is yours forever 🐧💖",
+    "You are my home 🏡",
+    "I love you more than yesterday… and less than tomorrow 💞"
+  ];
+  alert(notes[Math.floor(Math.random()*notes.length)]);
+}
+
+// ===== HEART METER =====
+let hearts = 0;
+function penguinTap(){
+  hearts++;
+  fill.style.width = Math.min(hearts*10, 100) + "%";
+  if(hearts === 10){
+    alert("💖 Secret Message: You are my forever 💖");
+  }
+}
+
+// ===== FLOATING EMOJIS (theme-based) =====
+function spawn(){
+  const t = THEMES[themeIndex];
+  const el = document.createElement("div");
+  el.className = "float";
+  el.innerHTML = t.floats[Math.floor(Math.random()*t.floats.length)];
+  el.style.left = Math.random()*100 + "vw";
+  el.style.fontSize = (18 + Math.random()*22) + "px";
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 6000);
+}
+
+// ===== COUNTDOWN =====
+function updateCountdown(){
+  const d = new Date("2024-09-17");
+  const now = new Date();
+  const diff = Math.abs(now - d);
+  document.getElementById("countdown").innerText =
+    Math.floor(diff/86400000) + " days together 💕";
+}
+setInterval(updateCountdown, 60000);
+updateCountdown();
+
+// ===== PHOTO GALLERY (cross-fade + messages + manual) =====
+const photos = [
+  {src:"photo1.jpg", msg:"One of our first memories together 💖"},
+  {src:"photo2.jpg", msg:"Me and You ✈️"},
+  {src:"photo3.jpg", msg:"Laughing together 🐧"},
+  {src:"photo4.jpg", msg:"I Love You 💕"},
+  {src:"photo5.jpg", msg:"Our favorite moment ❤️"},
+  {src:"photo6.jpg", msg:"Forever love ✨"},
+  {src:"photo7.jpg", msg:"Special memories together 💌"}
+  {src:"photo8.jpg", msg:"Together Forever My Beautuiful Penguin🫶"}
+  {src:"photo9.jpg", msg:"I will never let you fall 😘"}
+];
+
+let photoIndex = 0;
+
+function showPhoto(index){
+  gallery.style.opacity = 0;
+  photoMessage.style.opacity = 0;
+
+  setTimeout(()=>{
+    gallery.src = photos[index].src;
+    photoMessage.innerText = photos[index].msg;
+    gallery.style.opacity = 1;
+    photoMessage.style.opacity = 1;
+    photoIndex = index;
+  }, 650);
+}
+
+function nextPhoto(){
+  showPhoto((photoIndex + 1) % photos.length);
+}
+
+function prevPhoto(){
+  showPhoto((photoIndex - 1 + photos.length) % photos.length);
+}
+
+// OPTIONAL: if you ever want to change speed later
+function setPhotoSpeed(ms){
+  clearInterval(autoRotate);
+  photoSpeed = ms;
+  autoRotate = setInterval(nextPhoto, photoSpeed);
+}
+
+// Start with heart theme visuals even on lock screen (optional)
+applyTheme(themeIndex);
+</script>
+
+</body>
+</html>
