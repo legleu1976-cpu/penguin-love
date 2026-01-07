@@ -1,289 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Penguin Love 🐧❤️</title>
+
+<style>
+:root{
+  --bg1:#ffd6e8;
+  --bg2:#fff0f7;
+  --accent:#ff4081;
+  --text:#111;
+  --font:"Comic Sans MS", cursive;
+  --msgBg: rgba(0,0,0,0.35);
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  text-align:center;
+  font-family: var(--font);
+  background: linear-gradient(var(--bg1), var(--bg2));
+  color: var(--text);
+  overflow:hidden;
+}
+
+button{
+  background: var(--accent);
+  color:white;
+  border:none;
+  padding:10px 16px;
+  border-radius:20px;
+  font-size:16px;
+  margin:6px;
+}
+
+.smallBtn{ padding:8px 14px; font-size:15px; }
+
+.penguins{
+  width:280px;
+  cursor:pointer;
+  animation:pulse 2s infinite alternate;
+}
+@keyframes pulse{ from{transform:scale(1);} to{transform:scale(1.06);} }
+
+.meter{
+  width:80%;
+  max-width:520px;
+  height:12px;
+  background:#eee;
+  margin:10px auto;
+  border-radius:10px;
+  overflow:hidden;
+}
+.fill{ height:100%; width:0; background:var(--accent); }
+
+.galleryWrap{
+  position:relative;
+  display:inline-block;
+  margin-top:10px;
+  padding-bottom:60px;
+}
+
+#gallery{
+  width:230px;
+  border-radius:12px;
+  transition:opacity .9s;
+}
+
+#photoMessage{
+  position:absolute;
+  left:0; right:0;
+  bottom:60px;
+  padding:6px 0;
+  background:var(--msgBg);
+  color:white;
+  font-size:14px;
+  border-bottom-left-radius:12px;
+  border-bottom-right-radius:12px;
+  transition:opacity .9s;
+}
+
+.float{
+  position:absolute;
+  pointer-events:none;
+}
+
+@keyframes rise{
+  from{transform:translateY(110vh);opacity:1;}
+  to{transform:translateY(-20vh);opacity:0;}
+}
+
+/* LOCK */
+#lock{
+  position:fixed; inset:0;
+  background:rgba(255,182,213,.96);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+.lockBox{
+  background:white;
+  padding:20px;
+  border-radius:16px;
+  width:85%;
+  max-width:400px;
+}
+#status{ min-height:18px; color:#b00020; }
+
+/* THEME SHEET */
+#sheetOverlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.35);
+  display:none;
+  z-index:998;
+}
+#themeSheet{
+  position:fixed;
+  left:0; right:0;
+  bottom:-300px;
+  background:white;
+  border-top-left-radius:18px;
+  border-top-right-radius:18px;
+  padding:14px;
+  transition:bottom .25s ease;
+  z-index:999;
+}
+#themeSheet.open{ bottom:0; }
+.sheetBtn{
+  background:white;
+  color:#111;
+  border:1px solid #ccc;
+  border-radius:14px;
+  padding:10px 14px;
+  margin:6px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOCK -->
+<div id="lock">
+  <div class="lockBox">
+    <h2>🐧 Secret Love 🐧</h2>
+    <p>What’s our word?</p>
+    <input id="pw" type="password" style="padding:10px;width:80%;border-radius:12px;border:1px solid #ccc">
+    <br><br>
+    <button id="enterBtn">Enter</button>
+    <div id="status"></div>
+  </div>
+</div>
+
+<h2>Sarah ❤️ Ricardo</h2>
+<p>Anniversary: September 17, 2024</p>
+<p id="countdown"></p>
+
+<img src="penguins.png" class="penguins" id="penguinImg">
+
+<div class="meter"><div class="fill" id="fill"></div></div>
+
+<div class="galleryWrap">
+  <img id="gallery" src="photo1.jpg">
+  <div id="photoMessage">Our first memory together 💖</div>
+  <div style="position:absolute;bottom:0;left:0;right:0;">
+    <button class="smallBtn" id="prevBtn">⏮ Prev</button>
+    <button class="smallBtn" id="nextBtn">Next ⏭</button>
+  </div>
+</div>
+
+<div>
+  <button id="voiceBtn">Hear My Voice</button>
+  <button id="noteBtn">Love Note</button>
+  <button id="themesBtn">Themes</button>
+  <button id="musicBtn">Play Music</button>
+</div>
+
+<audio id="music" src="music.mp3" loop></audio>
+<audio id="voice" src="voice.mp3"></audio>
+
+<div id="sheetOverlay"></div>
+<div id="themeSheet">
+  <button class="sheetBtn" data-theme="0">🐧 Penguin</button>
+  <button class="sheetBtn" data-theme="1">❤️ Heart</button>
+  <button class="sheetBtn" data-theme="2">🍷 Wine</button>
+</div>
+
 <script>
-/* ================== EDIT THESE ================== */
-const SECRET = "love";
-let photoSpeed = 9000; // ms (slower = bigger). example: 12000
-/* =============================================== */
+const SECRET="love";
+let photoSpeed=9000;
 
-// Helpers
-const el = (id)=>document.getElementById(id);
-
-// Elements
-const lock = el("lock");
-const pw = el("pw");
-const status = el("status");
-const enterBtn = el("enterBtn");
-
-const music = el("music");
-const voice = el("voice");
-const musicBtn = el("musicBtn");
-
-const penguinImg = el("penguinImg");
-const fill = el("fill");
-
-const gallery = el("gallery");
-const photoMessage = el("photoMessage");
-const prevBtn = el("prevBtn");
-const nextBtn = el("nextBtn");
-
-const voiceBtn = el("voiceBtn");
-const noteBtn = el("noteBtn");
-const themesBtn = el("themesBtn");
-
-const sheetOverlay = el("sheetOverlay");
-const themeSheet = el("themeSheet");
-const closeSheetBtn = el("closeSheetBtn");
-
-// ===== THEMES (colors + floaties) =====
-const THEMES = [
-  {
-    name:"🐧 Penguin",
-    bg1:"#b3e5fc", bg2:"#e1f5fe",
-    accent:"#1565c0", text:"#0b1b2b",
-    font:'"Trebuchet MS", Arial, sans-serif',
-    msgBg:"rgba(21,101,192,0.45)",
-    floats:["🐧","❄️","✨","❄️","✨"] // a little extra sparkle
-  },
-  {
-    name:"❤️ Heart",
-    bg1:"#ffd6e8", bg2:"#fff0f7",
-    accent:"#ff4081", text:"#2a0b14",
-    font:'"Comic Sans MS", cursive',
-    msgBg:"rgba(255,64,129,0.45)",
-    floats:["❤️","💖","✨","💖","❤️"]
-  },
-  {
-    name:"🍷 Wine",
-    bg1:"#2b0b17", bg2:"#4b1230",
-    accent:"#c2185b", text:"#fff5f8",
-    font:'Georgia, "Times New Roman", serif',
-    msgBg:"rgba(194,24,91,0.45)",
-    // more wine glasses + cheers
-    floats:["🍷","🍷","🍷","🥂","✨","🍷","🥂"]
-  }
+const THEMES=[
+ {bg1:"#b3e5fc",bg2:"#e1f5fe",accent:"#1565c0",text:"#0b1b2b",
+  font:'"Trebuchet MS",Arial',msgBg:"rgba(21,101,192,.45)",
+  floats:["🐧","❄️","✨"]},
+ {bg1:"#ffd6e8",bg2:"#fff0f7",accent:"#ff4081",text:"#2a0b14",
+  font:'"Comic Sans MS",cursive',msgBg:"rgba(255,64,129,.45)",
+  floats:["❤️","💖","✨"]},
+ {bg1:"#2b0b17",bg2:"#4b1230",accent:"#c2185b",text:"#fff5f8",
+  font:'Georgia,serif',msgBg:"rgba(194,24,91,.45)",
+  floats:["🍷","🍷","🥂","✨"]}
 ];
 
-let themeIndex = 1; // default: 0 penguin, 1 heart, 2 wine
+let themeIndex=1;
 
-function applyTheme(idx){
-  const t = THEMES[idx];
-  document.documentElement.style.setProperty("--bg1", t.bg1);
-  document.documentElement.style.setProperty("--bg2", t.bg2);
-  document.documentElement.style.setProperty("--accent", t.accent);
-  document.documentElement.style.setProperty("--text", t.text);
-  document.documentElement.style.setProperty("--font", t.font);
-  document.documentElement.style.setProperty("--msgBg", t.msgBg);
-  themeIndex = idx;
+function applyTheme(i){
+ const t=THEMES[i];
+ document.documentElement.style.setProperty("--bg1",t.bg1);
+ document.documentElement.style.setProperty("--bg2",t.bg2);
+ document.documentElement.style.setProperty("--accent",t.accent);
+ document.documentElement.style.setProperty("--text",t.text);
+ document.documentElement.style.setProperty("--font",t.font);
+ document.documentElement.style.setProperty("--msgBg",t.msgBg);
+ themeIndex=i;
 }
 applyTheme(themeIndex);
 
-// ===== PHOTO LIST (9) =====
-const photos = [
-  {src:"photo1.jpg", msg:"Our first memory together 💖"},
-  {src:"photo2.jpg", msg:"Adventure on our first trip ✈️"},
-  {src:"photo3.jpg", msg:"Laughing together 🐧"},
-  {src:"photo4.jpg", msg:"A cozy night 💕"},
-  {src:"photo5.jpg", msg:"Our favorite moment ❤️"},
-  {src:"photo6.jpg", msg:"Forever love ✨"},
-  {src:"photo7.jpg", msg:"Special memories together 💌"},
-  {src:"photo8.jpg", msg:"Another beautiful memory 💕"},
-  {src:"photo9.jpg", msg:"One of my favorite moments with you ❤️"}
+const photos=[
+ {src:"photo1.jpg",msg:"Our first memory together 💖"},
+ {src:"photo2.jpg",msg:"Adventure on our first trip ✈️"},
+ {src:"photo3.jpg",msg:"Laughing together 🐧"},
+ {src:"photo4.jpg",msg:"A cozy night 💕"},
+ {src:"photo5.jpg",msg:"Our favorite moment ❤️"},
+ {src:"photo6.jpg",msg:"Forever love ✨"},
+ {src:"photo7.jpg",msg:"Special memories 💌"},
+ {src:"photo8.jpg",msg:"Another beautiful moment 💕"},
+ {src:"photo9.jpg",msg:"Always you ❤️"}
 ];
 
-let photoIndex = 0;
-let autoRotate = null;
+let i=0, autoRotate=null, hearts=0, floatTimer=null;
 
-// Crossfade show
-function showPhoto(index){
-  gallery.style.opacity = 0;
-  photoMessage.style.opacity = 0;
+const gallery=document.getElementById("gallery");
+const msg=document.getElementById("photoMessage");
+const fill=document.getElementById("fill");
+const music=document.getElementById("music");
+const voice=document.getElementById("voice");
 
-  setTimeout(()=>{
-    gallery.src = photos[index].src;
-    photoMessage.textContent = photos[index].msg;
-    gallery.style.opacity = 1;
-    photoMessage.style.opacity = 1;
-    photoIndex = index;
-  }, 650);
+function show(n){
+ gallery.style.opacity=0; msg.style.opacity=0;
+ setTimeout(()=>{
+  gallery.src=photos[n].src;
+  msg.textContent=photos[n].msg;
+  gallery.style.opacity=1; msg.style.opacity=1;
+  i=n;
+ },600);
 }
 
-function nextPhoto(){ showPhoto((photoIndex + 1) % photos.length); }
-function prevPhoto(){ showPhoto((photoIndex - 1 + photos.length) % photos.length); }
-
-function startAutoRotate(){
-  if(autoRotate) clearInterval(autoRotate);
-  autoRotate = setInterval(nextPhoto, photoSpeed);
+function startAuto(){
+ if(autoRotate) clearInterval(autoRotate);
+ autoRotate=setInterval(()=>show((i+1)%photos.length),photoSpeed);
 }
 
-function setPhotoSpeed(ms){
-  photoSpeed = ms;
-  startAutoRotate();
-}
-
-// ===== FLOATIES (theme-based + drift + spin) =====
-let floatTimer = null;
-
-function spawnFloat(xPercent=null, burst=false){
-  const t = THEMES[themeIndex];
-
-  const f = document.createElement("div");
-  f.className = "float";
-  f.innerHTML = t.floats[Math.floor(Math.random() * t.floats.length)];
-
-  // position
-  const left = (xPercent === null) ? (Math.random() * 100) : xPercent;
-  f.style.left = left + "vw";
-
-  // size variety
-  const size = burst ? (20 + Math.random()*26) : (16 + Math.random()*22);
-  f.style.fontSize = size + "px";
-
-  // drift + spin parameters (CSS keyframes are vertical; we add extra transform via animation)
-  const drift = (Math.random()*80 - 40); // -40..40 px sideways drift
-  const spin = (Math.random()*240 - 120); // -120..120 deg
-  const dur = burst ? (3.5 + Math.random()*1.5) : (5.0 + Math.random()*2.0);
-
-  f.animate(
-    [
-      { transform: `translate(${0}px, 110vh) rotate(0deg)`, opacity: 1 },
-      { transform: `translate(${drift}px, -20vh) rotate(${spin}deg)`, opacity: 0 }
-    ],
-    { duration: dur*1000, easing: "linear", fill: "forwards" }
-  );
-
-  document.body.appendChild(f);
-  setTimeout(()=>f.remove(), dur*1000 + 100);
+function spawnFloat(burst=false){
+ const t=THEMES[themeIndex];
+ const f=document.createElement("div");
+ f.className="float";
+ f.textContent=t.floats[Math.floor(Math.random()*t.floats.length)];
+ f.style.left=(Math.random()*100)+"vw";
+ f.style.fontSize=(burst?24:16+Math.random()*20)+"px";
+ document.body.appendChild(f);
+ const drift=(Math.random()*80-40);
+ f.animate([
+  {transform:`translate(0,110vh) rotate(0deg)`,opacity:1},
+  {transform:`translate(${drift}px,-20vh) rotate(${Math.random()*200-100}deg)`,opacity:0}
+ ],{duration:(burst?3500:5500),easing:"linear",fill:"forwards"});
+ setTimeout(()=>f.remove(),6000);
 }
 
 function startFloaties(){
-  if(floatTimer) return;
-  floatTimer = setInterval(()=>spawnFloat(), 550);
+ if(floatTimer) return;
+ floatTimer=setInterval(spawnFloat,550);
 }
 
-// Burst when tapping penguin
-function burstAtPenguin(){
-  // spawn a cluster near center (around penguin)
-  const base = 50 + (Math.random()*6 - 3); // around middle
-  for(let k=0; k<14; k++){
-    // small spread left/right
-    const x = base + (Math.random()*14 - 7);
-    setTimeout(()=>spawnFloat(x, true), k*35);
-  }
-}
+document.getElementById("penguinImg").onclick=()=>{
+ hearts++; fill.style.width=Math.min(hearts*10,100)+"%";
+ for(let k=0;k<12;k++) setTimeout(()=>spawnFloat(true),k*40);
+};
 
-// ===== COUNTDOWN =====
-function updateCountdown(){
-  const d = new Date("2024-09-17");
-  const now = new Date();
-  const diff = Math.abs(now - d);
-  el("countdown").textContent = Math.floor(diff/86400000) + " days together 💕";
-}
-setInterval(updateCountdown, 60000);
-updateCountdown();
+document.getElementById("prevBtn").onclick=()=>show((i-1+photos.length)%photos.length);
+document.getElementById("nextBtn").onclick=()=>show((i+1)%photos.length);
 
-// ===== MUSIC TOGGLE =====
-function toggleMusic(){
-  if(music.paused){
-    music.play().catch(()=>{});
-    musicBtn.textContent = "Pause Music";
-  } else {
-    music.pause();
-    musicBtn.textContent = "Play Music";
-  }
-}
+document.getElementById("musicBtn").onclick=()=>{
+ if(music.paused){ music.play(); musicBtn.textContent="Pause Music"; }
+ else{ music.pause(); musicBtn.textContent="Play Music"; }
+};
 
-// ===== VOICE (pause music automatically) =====
-function playVoice(){
-  if(!music.paused){
-    music.pause();
-    musicBtn.textContent = "Play Music";
-  }
-  voice.currentTime = 0;
-  voice.play().catch(()=>{});
-}
+document.getElementById("voiceBtn").onclick=()=>{
+ music.pause(); musicBtn.textContent="Play Music";
+ voice.currentTime=0; voice.play();
+};
 
-// ===== LOVE NOTES =====
-function loveNote(){
-  const notes = [
-    "You are my favorite person ❤️",
-    "I’d choose you in every lifetime 💫",
-    "My heart is yours forever 🐧💖",
-    "You are my home 🏡",
-    "I love you more than yesterday… and less than tomorrow 💞"
-  ];
-  alert(notes[Math.floor(Math.random()*notes.length)]);
-}
+document.getElementById("noteBtn").onclick=()=>{
+ alert("I love you more every single day ❤️");
+};
 
-// ===== HEART METER + PENGUIN TAP =====
-let hearts = 0;
-function penguinTap(){
-  // burst effect
-  burstAtPenguin();
+document.getElementById("themesBtn").onclick=()=>{
+ sheetOverlay.style.display="block";
+ themeSheet.classList.add("open");
+};
 
-  // meter
-  hearts++;
-  fill.style.width = Math.min(hearts*10, 100) + "%";
-  if(hearts === 10) alert("💖 Secret Message: You are my forever 💖");
-}
+sheetOverlay.onclick=()=>{
+ sheetOverlay.style.display="none";
+ themeSheet.classList.remove("open");
+};
 
-// ===== THEME SHEET =====
-function openThemeSheet(){
-  sheetOverlay.style.display = "block";
-  themeSheet.classList.add("open");
-  themeSheet.setAttribute("aria-hidden","false");
-}
-function closeThemeSheet(){
-  themeSheet.classList.remove("open");
-  themeSheet.setAttribute("aria-hidden","true");
-  setTimeout(()=>{ sheetOverlay.style.display = "none"; }, 200);
-}
-
-// ===== UNLOCK (never silent) =====
-function unlock(){
-  const typed = (pw.value || "").trim();
-  if(!typed){
-    status.textContent = "Type the password first 🙂";
-    return;
-  }
-  if(typed !== SECRET){
-    status.textContent = "Wrong password. Try again 💖";
-    return;
-  }
-
-  status.textContent = "";
-  lock.style.display = "none";
-
-  startFloaties();
-  startAutoRotate();
-
-  // Start music on unlock (user gesture)
-  if(music.paused){
-    music.play().catch(()=>{});
-    musicBtn.textContent = "Pause Music";
-  }
-}
-
-// ===== WIRE EVENTS =====
-enterBtn.addEventListener("click", unlock);
-pw.addEventListener("keydown", (e)=>{ if(e.key === "Enter") unlock(); });
-
-musicBtn.addEventListener("click", toggleMusic);
-voiceBtn.addEventListener("click", playVoice);
-noteBtn.addEventListener("click", loveNote);
-themesBtn.addEventListener("click", openThemeSheet);
-
-prevBtn.addEventListener("click", prevPhoto);
-nextBtn.addEventListener("click", nextPhoto);
-
-penguinImg.addEventListener("click", penguinTap);
-
-sheetOverlay.addEventListener("click", closeThemeSheet);
-closeSheetBtn.addEventListener("click", closeThemeSheet);
-
-document.querySelectorAll(".sheetBtn").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    const idx = Number(btn.dataset.theme);
-    applyTheme(idx);
-    closeThemeSheet();
-  });
+document.querySelectorAll(".sheetBtn").forEach(b=>{
+ b.onclick=()=>{ applyTheme(+b.dataset.theme); sheetOverlay.click(); };
 });
+
+document.getElementById("enterBtn").onclick=()=>{
+ if(pw.value.trim()!==SECRET){ status.textContent="Wrong password 💖"; return; }
+ lock.style.display="none";
+ startFloaties(); startAuto();
+ music.play().catch(()=>{});
+};
+
+function countdown(){
+ const d=new Date("2024-09-17");
+ const now=new Date();
+ document.getElementById("countdown").textContent=
+ Math.floor(Math.abs(now-d)/86400000)+" days together 💕";
+}
+setInterval(countdown,60000); countdown();
 </script>
+
+</body>
+</html>
