@@ -184,6 +184,28 @@ button{
 const SECRET="love";
 let photoSpeed=9000;
 
+const THEMES = [
+  { bg1:"#b3e5fc", bg2:"#e1f5fe", accent:"#1565c0", text:"#0b1b2b",
+    font:'"Trebuchet MS", Arial, sans-serif', msgBg:"rgba(21,101,192,0.45)" },
+  { bg1:"#ffd6e8", bg2:"#fff0f7", accent:"#ff4081", text:"#2a0b14",
+    font:'"Comic Sans MS", cursive', msgBg:"rgba(255,64,129,0.45)" },
+  { bg1:"#2b0b17", bg2:"#4b1230", accent:"#c2185b", text:"#fff5f8",
+    font:'Georgia, "Times New Roman", serif', msgBg:"rgba(194,24,91,0.45)" }
+];
+let themeIndex = 1;
+
+function applyTheme(idx){
+  const t = THEMES[idx];
+  document.documentElement.style.setProperty("--bg1", t.bg1);
+  document.documentElement.style.setProperty("--bg2", t.bg2);
+  document.documentElement.style.setProperty("--accent", t.accent);
+  document.documentElement.style.setProperty("--text", t.text);
+  document.documentElement.style.setProperty("--font", t.font);
+  document.documentElement.style.setProperty("--msgBg", t.msgBg);
+  themeIndex = idx;
+}
+applyTheme(themeIndex);
+
 const photos=[
  {src:"photo1.jpg",msg:"Our first memory together 💖"},
  {src:"photo2.jpg",msg:"Adventure together ✈️"},
@@ -196,14 +218,42 @@ const photos=[
  {src:"photo9.jpg",msg:"Always you ❤️"}
 ];
 
-let i=0, hearts=0, autoRotate;
+let i=0, hearts=0, autoRotate=null;
 
+// Elements
 const gallery=document.getElementById("gallery");
 const msg=document.getElementById("photoMessage");
 const fill=document.getElementById("fill");
 const music=document.getElementById("music");
 const voice=document.getElementById("voice");
 
+const musicBtn=document.getElementById("musicBtn");
+const voiceBtn=document.getElementById("voiceBtn");
+const noteBtn=document.getElementById("noteBtn");
+const themesBtn=document.getElementById("themesBtn");
+const prevBtn=document.getElementById("prev");
+const nextBtn=document.getElementById("next");
+const penguin=document.getElementById("penguin");
+
+const sheetOverlay=document.getElementById("sheetOverlay");
+const themeSheet=document.getElementById("themeSheet");
+
+const lock=document.getElementById("lock");
+const pw=document.getElementById("pw");
+const status=document.getElementById("status");
+const enterBtn=document.getElementById("enterBtn");
+
+function closeSheet(){
+  sheetOverlay.style.display="none";
+  themeSheet.classList.remove("open");
+}
+
+function openSheet(){
+  sheetOverlay.style.display="block";
+  themeSheet.classList.add("open");
+}
+
+// Crossfade photo
 function show(n){
   gallery.style.opacity=0;
   msg.style.opacity=0;
@@ -216,56 +266,86 @@ function show(n){
   },500);
 }
 
-document.getElementById("next").onclick=()=>show((i+1)%photos.length);
-document.getElementById("prev").onclick=()=>show((i-1+photos.length)%photos.length);
+function startAutoRotate(){
+  if(autoRotate) clearInterval(autoRotate);
+  autoRotate = setInterval(()=>show((i+1)%photos.length), photoSpeed);
+}
 
-document.getElementById("penguin").onclick=()=>{
+nextBtn.onclick=()=>show((i+1)%photos.length);
+prevBtn.onclick=()=>show((i-1+photos.length)%photos.length);
+
+penguin.onclick=()=>{
   hearts++;
   fill.style.width=Math.min(hearts*10,100)+"%";
   if(hearts===10) alert("💖 You are my forever 💖");
 };
 
-document.getElementById("musicBtn").onclick=()=>{
-  if(music.paused){ music.play(); musicBtn.textContent="Pause Music"; }
-  else{ music.pause(); musicBtn.textContent="Play Music"; }
+musicBtn.onclick=()=>{
+  if(music.paused){
+    music.play().catch(()=>{});
+    musicBtn.textContent="Pause Music";
+  } else {
+    music.pause();
+    musicBtn.textContent="Play Music";
+  }
 };
 
-document.getElementById("voiceBtn").onclick=()=>{
-  music.pause(); musicBtn.textContent="Play Music";
-  voice.currentTime=0; voice.play();
+voiceBtn.onclick=()=>{
+  music.pause();
+  musicBtn.textContent="Play Music";
+  voice.currentTime=0;
+  voice.play().catch(()=>{});
 };
 
-document.getElementById("noteBtn").onclick=()=>{
-  alert("I love you more every single day ❤️");
+noteBtn.onclick=()=>{
+  const notes=[
+    "I love you more every single day ❤️",
+    "You are my favorite person 💖",
+    "Forever looks good on us 🐧",
+    "You’re my home 🏡",
+    "I’d choose you every time ✨"
+  ];
+  alert(notes[Math.floor(Math.random()*notes.length)]);
 };
 
-document.getElementById("themesBtn").onclick=()=>{
-  document.getElementById("sheetOverlay").style.display="block";
-  document.getElementById("themeSheet").classList.add("open");
-};
+// Themes
+themesBtn.onclick=openSheet;
+sheetOverlay.onclick=closeSheet;
 
-document.getElementById("sheetOverlay").onclick=()=>{
-  sheetOverlay.style.display="none";
-  themeSheet.classList.remove("open");
-};
-
-document.querySelectorAll(".sheetBtn").forEach(b=>{
-  b.onclick=()=>{ sheetOverlay.click(); };
+document.querySelectorAll(".sheetBtn").forEach(btn=>{
+  btn.onclick=()=>{
+    const idx = Number(btn.dataset.theme);
+    applyTheme(idx);
+    closeSheet();
+  };
 });
 
-document.getElementById("enterBtn").onclick=()=>{
-  if(pw.value.trim()!==SECRET){ status.textContent="Wrong password 💖"; return; }
+// Unlock
+enterBtn.onclick=()=>{
+  const typed = (pw.value||"").trim();
+  if(!typed){ status.textContent="Type the password first 🙂"; return; }
+  if(typed!==SECRET){ status.textContent="Wrong password 💖"; return; }
+
+  status.textContent="";
   lock.style.display="none";
-  autoRotate=setInterval(()=>show((i+1)%photos.length),photoSpeed);
+  startAutoRotate();
+
+  // Start music on unlock (user gesture)
+  if(music.paused){
+    music.play().catch(()=>{});
+    musicBtn.textContent="Pause Music";
+  }
 };
 
+// Countdown
 function countdown(){
   const d=new Date("2024-09-17");
   const now=new Date();
-  countdownEl.textContent=Math.floor(Math.abs(now-d)/86400000)+" days together 💕";
+  document.getElementById("countdown").textContent =
+    Math.floor(Math.abs(now-d)/86400000)+" days together 💕";
 }
-const countdownEl=document.getElementById("countdown");
-setInterval(countdown,60000); countdown();
+setInterval(countdown,60000);
+countdown();
 </script>
 
 </body>
