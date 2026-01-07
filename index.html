@@ -31,6 +31,7 @@ button {
 .penguins {
   width:280px;
   animation:pulse 2s infinite alternate;
+  cursor:pointer;
 }
 @keyframes pulse {from{transform:scale(1);}to{transform:scale(1.06);}}
 .float {
@@ -62,6 +63,25 @@ button {
 .fill {
   height:100%;width:0;background:var(--accent);border-radius:10px;
 }
+.gallery-container {
+  position:relative;
+  display:inline-block;
+  margin-top:10px;
+}
+#gallery {
+  width:200px;
+  border-radius:12px;
+  transition: opacity 1s;
+}
+#photoMessage {
+  position:absolute;
+  bottom:5px;
+  width:100%;
+  color:white;
+  text-shadow:0 0 5px black;
+  font-size:14px;
+  transition: opacity 1s;
+}
 </style>
 </head>
 
@@ -87,12 +107,16 @@ button {
 
 <div class="meter"><div id="fill" class="fill"></div></div>
 
-<img id="gallery" src="photo1.jpg" width="200" style="border-radius:12px">
+<div class="gallery-container">
+  <img id="gallery" src="photo1.jpg">
+  <div id="photoMessage">Our first memory together 💖</div>
+</div>
 
 <div>
   <button onclick="playVoice()">Hear My Voice</button>
   <button onclick="loveNote()">Love Note</button>
   <button onclick="toggleTheme()">Theme</button>
+  <button id="musicBtn" onclick="toggleMusic()">Play Music</button>
 </div>
 
 <div class="timeline">
@@ -108,36 +132,27 @@ button {
 <audio id="voice" src="voice.mp3"></audio>
 
 <script>
+// ======== PASSWORD ========
 const SECRET="love";
-let hearts=0,theme=0;
-const fill=document.getElementById("fill");
-const gallery=document.getElementById("gallery");
-const photos=["photo1.jpg","photo2.jpg","photo3.jpg","photo4.jpg","photo5.jpg","photo6.jpg","photo7.jpg","photo8.jpg","photo9.jpg"];
-let idx=0;
-
 function unlock(){
   if(pw.value===SECRET){
     lock.style.display="none";
-    music.play();
+    if(music.paused){ music.play(); musicBtn.innerText="Pause Music"; }
     setInterval(spawn,500);
-    setInterval(()=>gallery.src=photos[idx++%photos.length],2500);
+    setInterval(showNextPhoto,3000);
   }
 }
-function spawn(){
-  const el=document.createElement("div");
-  el.className="float";
-  el.innerHTML=Math.random()>.5?"❤️":"✨";
-  el.style.left=Math.random()*100+"vw";
-  el.style.fontSize=20+Math.random()*20+"px";
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(),6000);
-}
+
+// ======== HEART METER ========
+let hearts=0;
+const fill=document.getElementById("fill");
 function penguinTap(){
   hearts++;
   fill.style.width=Math.min(hearts*10,100)+"%";
   if(hearts===10) alert("💖 Secret Message: You are my forever 💖");
 }
-function playVoice(){voice.play();}
+
+// ======== LOVE NOTES ========
 function loveNote(){
   const notes=[
     "You are my favorite person ❤️",
@@ -147,11 +162,51 @@ function loveNote(){
   ];
   alert(notes[Math.floor(Math.random()*notes.length)]);
 }
+
+// ======== THEME SWITCHER ========
+let theme=false;
 function toggleTheme(){
   theme=!theme;
   document.documentElement.style.setProperty("--bg1",theme?"#1a1a2e":"#ffd6e8");
   document.documentElement.style.setProperty("--bg2",theme?"#16213e":"#fff0f7");
 }
+
+// ======== VOICE ========
+const music=document.getElementById("music");
+const voice=document.getElementById("voice");
+const musicBtn=document.getElementById("musicBtn");
+function playVoice(){
+  // Stop background music
+  if(!music.paused){
+    music.pause();
+    musicBtn.innerText="Play Music";
+  }
+  voice.play();
+}
+
+// ======== PLAY/PAUSE MUSIC TOGGLE ========
+function toggleMusic(){
+  if(music.paused){
+    music.play();
+    musicBtn.innerText="Pause Music";
+  } else {
+    music.pause();
+    musicBtn.innerText="Play Music";
+  }
+}
+
+// ======== FLOATING HEARTS & SPARKLES ========
+function spawn(){
+  const el=document.createElement("div");
+  el.className="float";
+  el.innerHTML=Math.random()>.5?"❤️":"✨";
+  el.style.left=Math.random()*100+"vw";
+  el.style.fontSize=20+Math.random()*20+"px";
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),6000);
+}
+
+// ======== COUNTDOWN ========
 function updateCountdown(){
   const d=new Date("2024-09-17");
   const now=new Date();
@@ -159,6 +214,33 @@ function updateCountdown(){
   countdown.innerText=Math.floor(diff/86400000)+" days together 💕";
 }
 setInterval(updateCountdown,60000);updateCountdown();
+
+// ======== PHOTO GALLERY + CROSSFADE + MESSAGES ========
+const photos = [
+  {src:"photo1.jpg", msg:"Our first memory together 💖"},
+  {src:"photo2.jpg", msg:"Adventure on our first trip ✈️"},
+  {src:"photo3.jpg", msg:"Laughing together 🐧"},
+  {src:"photo4.jpg", msg:"A cozy night 💕"},
+  {src:"photo5.jpg", msg:"Our favorite moment ❤️"},
+  {src:"photo6.jpg", msg:"Forever love ✨"},
+  {src:"photo7.jpg", msg:"Special memories together 💌"}
+];
+let photoIndex = 0;
+const gallery=document.getElementById("gallery");
+const photoMessage=document.getElementById("photoMessage");
+
+function showNextPhoto(){
+  const nextIndex=(photoIndex+1)%photos.length;
+  gallery.style.opacity=0;
+  photoMessage.style.opacity=0;
+  setTimeout(()=>{
+    gallery.src=photos[nextIndex].src;
+    photoMessage.innerText=photos[nextIndex].msg;
+    gallery.style.opacity=1;
+    photoMessage.style.opacity=1;
+    photoIndex=nextIndex;
+  },1000);
+}
 </script>
 
 </body>
