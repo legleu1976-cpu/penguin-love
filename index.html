@@ -27,6 +27,9 @@
 
   /* Background photo (change this to photo2.jpg etc if you want) */
   --bgPhoto: url("photo1.jpg");
+
+  /* Sparkle accent used by underline */
+  --sparkle: rgba(255,255,255,0.9);
 }
 
 /* ==== Background layers (photo + theme tint) ==== */
@@ -40,16 +43,15 @@ body::before{
   background-repeat: no-repeat;
   filter: blur(2px) saturate(1.05);
   transform: scale(1.03);
-  opacity: 0.30;               /* photo strength */
+  opacity: 0.30;
   z-index: -2;
 }
-
 body::after{
   content:"";
   position: fixed;
   inset: 0;
   background: linear-gradient(var(--tint1), var(--tint2));
-  opacity: 0.70;               /* theme tint strength */
+  opacity: 0.70;
   z-index: -1;
 }
 
@@ -77,7 +79,6 @@ body{
 
 #app > *{ position: relative; z-index: 3; }
 
-h2{ margin: 14px 0 4px; }
 p{ margin: 6px 0; }
 
 button{
@@ -166,6 +167,99 @@ button{
     inset 0 0 22px var(--frameInset);
 }
 
+/* ===== Fancy header styles + animations ===== */
+#titleBlock{
+  display: inline-block;
+  margin-top: 12px;
+  padding: 2px 12px 0;
+}
+
+#titleNames{
+  font-size: 36px;
+  margin: 8px 0 2px;
+  letter-spacing: 0.6px;
+  text-shadow: 0 3px 14px rgba(0,0,0,0.35);
+  transition: opacity 320ms ease, transform 320ms ease, filter 320ms ease;
+  transform-origin: center;
+}
+
+/* Soft fade when theme changes */
+#titleNames.fading{
+  opacity: 0;
+  transform: translateY(-2px) scale(0.99);
+  filter: blur(0.6px);
+}
+
+/* Sparkle underline container */
+#sparkleUnderline{
+  height: 10px;
+  margin: 0 auto 6px;
+  width: min(360px, 86vw);
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+/* Base underline */
+#sparkleUnderline::before{
+  content:"";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 4px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--sparkle), transparent);
+  opacity: 0.55;
+}
+
+/* Sparkle sweep */
+#sparkleUnderline::after{
+  content:"";
+  position: absolute;
+  top: 0;
+  left: -35%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,0.85),
+    rgba(255,255,255,0.25),
+    transparent);
+  opacity: 0.9;
+  filter: blur(0.2px);
+  animation: sparkleSweep 2.9s ease-in-out infinite;
+}
+@keyframes sparkleSweep{
+  0%   { left: -35%; opacity: 0.0; }
+  18%  { opacity: 0.85; }
+  50%  { left: 55%; opacity: 0.95; }
+  82%  { opacity: 0.45; }
+  100% { left: 115%; opacity: 0.0; }
+}
+
+#titleAnniv{
+  font-size: 17px;
+  opacity: 0.95;
+  margin: 2px 0 4px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+
+#countdown{
+  font-size: 18px;
+  margin: 0 0 10px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.28);
+}
+
+/* Pulse once per day (triggered by JS) */
+#countdown.pulseOnce{
+  animation: dayPulse 1100ms ease-in-out;
+}
+@keyframes dayPulse{
+  0%   { transform: scale(1); filter: brightness(1); }
+  35%  { transform: scale(1.06); filter: brightness(1.18); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
 /* Bottom message (scrolls with app) */
 #loveWriterBottom{
   width: 100%;
@@ -210,7 +304,7 @@ button{
   100% { transform: scale(1); }
 }
 
-/* LOCK (fixed centering) */
+/* LOCK (centered) */
 #lock{
   position: fixed; inset: 0;
   background: rgba(255,182,213,.90);
@@ -227,16 +321,12 @@ button{
   width: 100%;
   max-width: 420px;
   box-shadow: 0 0 25px rgba(0,0,0,0.12);
-  text-align: center;            /* ✅ centers everything */
+  text-align: center;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
-.lockBox h2, .lockBox p{
-  margin-left: auto;
-  margin-right: auto;
-}
 .lockBox input{
-  display: block;                /* ✅ centers input */
+  display: block;
   margin: 10px auto 0;
   padding: 10px;
   width: min(320px, 90%);
@@ -245,14 +335,7 @@ button{
   font-size: 16px;
   text-align: center;
 }
-#enterBtn{
-  display: inline-block;
-}
-#status{
-  min-height: 18px;
-  color: #b00020;
-  margin-top: 10px;
-}
+#status{ min-height: 18px; color: #b00020; margin-top: 10px; }
 
 /* THEME SHEET */
 #sheetOverlay{
@@ -308,8 +391,8 @@ button{
 <!-- LOCK -->
 <div id="lock">
   <div class="lockBox">
-    <h2>🐧 Secret Love 🐧</h2>
-    <p>What’s our word?</p>
+    <h2 style="margin:0 0 6px;">🐧 Secret Love 🐧</h2>
+    <p style="margin:0 0 8px;">What’s our word?</p>
     <input id="pw" type="password" placeholder="Password" />
     <button id="enterBtn" style="margin-top:12px;">Enter</button>
     <div id="status"></div>
@@ -319,8 +402,13 @@ button{
 
 <!-- SCROLLABLE APP -->
 <div id="app">
-  <h2>Sarah ❤️ Ricardo</h2>
-  <p>Anniversary: September 17, 2024</p>
+
+  <div id="titleBlock">
+    <h2 id="titleNames">Sarah ❤️ Ricardo</h2>
+    <div id="sparkleUnderline" aria-hidden="true"></div>
+  </div>
+
+  <p id="titleAnniv">Anniversary: September 17, 2024</p>
   <p id="countdown"></p>
 
   <img src="penguins.png" class="penguins" id="penguinImg" alt="Penguins" />
@@ -399,6 +487,11 @@ button{
 
   const loveWriterBottom = document.getElementById("loveWriterBottom");
 
+  const titleNames = document.getElementById("titleNames");
+  const titleAnniv = document.getElementById("titleAnniv");
+  const countdownEl = document.getElementById("countdown");
+  const sparkleUnderline = document.getElementById("sparkleUnderline");
+
   const sheetOverlay = document.getElementById("sheetOverlay");
   const themeSheet = document.getElementById("themeSheet");
   const closeSheetBtn = document.getElementById("closeSheetBtn");
@@ -420,26 +513,59 @@ button{
     "penguins.png","Penguins.png","penguins.PNG","Penguins.PNG","penguins.png.PNG","Penguins.png.PNG"
   ]);
 
+  // THEMES (fancy fonts + underline sparkle tint)
   const THEMES = [
-    { tint1:"#b3e5fc", tint2:"#e1f5fe", accent:"#1565c0", text:"#0b1b2b",
-      font:'"Trebuchet MS", Arial, sans-serif', msgBg:"rgba(21,101,192,0.45)",
+    { // 🐧 Penguin
+      tint1:"#b3e5fc", tint2:"#e1f5fe",
+      accent:"#1565c0", text:"#0b1b2b",
+      font:'"Trebuchet MS", Arial, sans-serif',
+      msgBg:"rgba(21,101,192,0.45)",
       frameGlow:"rgba(33,150,243,0.55)", frameInset:"rgba(255,255,255,0.45)",
-      floats:["🐧","❄️","✨","❄️","✨"] },
-    { tint1:"#ffd6e8", tint2:"#fff0f7", accent:"#ff4081", text:"#2a0b14",
-      font:'"Comic Sans MS", cursive', msgBg:"rgba(255,64,129,0.45)",
+      floats:["🐧","❄️","✨","❄️","✨"],
+      titleFont:'"Snell Roundhand","Apple Chancery","Zapfino",cursive',
+      subFont:'"Avenir","Trebuchet MS",sans-serif',
+      titleColor:"#0b4f6c",
+      annivColor:"#083344",
+      daysColor:"#0f766e",
+      sparkle:"rgba(17,183,199,0.85)"
+    },
+    { // ❤️ Heart
+      tint1:"#ffd6e8", tint2:"#fff0f7",
+      accent:"#ff4081", text:"#2a0b14",
+      font:'"Comic Sans MS", cursive',
+      msgBg:"rgba(255,64,129,0.45)",
       frameGlow:"rgba(255,64,129,0.55)", frameInset:"rgba(255,255,255,0.35)",
-      floats:["❤️","💖","✨","💖","❤️"] },
-    { tint1:"#2b0b17", tint2:"#4b1230", accent:"#c2185b", text:"#fff5f8",
-      font:'Georgia, "Times New Roman", serif', msgBg:"rgba(194,24,91,0.45)",
+      floats:["❤️","💖","✨","💖","❤️"],
+      titleFont:'"Snell Roundhand","Apple Chancery","Zapfino",cursive',
+      subFont:'"Georgia",serif',
+      titleColor:"#8b0038",
+      annivColor:"#5a0025",
+      daysColor:"#7a0032",
+      sparkle:"rgba(255,64,129,0.85)"
+    },
+    { // 🍷 Wine
+      tint1:"#2b0b17", tint2:"#4b1230",
+      accent:"#c2185b", text:"#fff5f8",
+      font:'Georgia, "Times New Roman", serif',
+      msgBg:"rgba(194,24,91,0.45)",
       frameGlow:"rgba(194,24,91,0.70)", frameInset:"rgba(0,0,0,0.35)",
-      floats:["🍷","🍷","🍷","🥂","✨","🍷","🥂"] }
+      floats:["🍷","🍷","🍷","🥂","✨","🍷","🥂"],
+      titleFont:'"Playfair Display","Didot","Times New Roman",serif',
+      subFont:'"Cormorant Garamond","Georgia",serif',
+      titleColor:"#fff5f8",
+      annivColor:"#f3d6df",
+      daysColor:"#ffdbe6",
+      sparkle:"rgba(255,255,255,0.75)"
+    }
   ];
+
   let themeIndex = 1;
 
   function getAccent(){
     return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff4081";
   }
 
+  // Bottom writer colors (readable per theme)
   function styleBottomWriterForTheme(){
     const accent = getAccent();
     if(themeIndex === 0){
@@ -460,8 +586,21 @@ button{
     }
   }
 
+  // Soft fade font change helper
+  function fadeTitleChange(applyNow){
+    titleNames.classList.add("fading");
+    setTimeout(() => {
+      applyNow();
+      // force reflow so the fade-in is crisp
+      void titleNames.offsetWidth;
+      titleNames.classList.remove("fading");
+    }, 220);
+  }
+
   function applyTheme(idx){
     const t = THEMES[idx];
+
+    // tint + general theme vars
     document.documentElement.style.setProperty("--tint1", t.tint1);
     document.documentElement.style.setProperty("--tint2", t.tint2);
     document.documentElement.style.setProperty("--accent", t.accent);
@@ -470,10 +609,46 @@ button{
     document.documentElement.style.setProperty("--msgBg", t.msgBg);
     document.documentElement.style.setProperty("--frameGlow", t.frameGlow);
     document.documentElement.style.setProperty("--frameInset", t.frameInset);
+    document.documentElement.style.setProperty("--sparkle", t.sparkle);
+
+    // sparkle underline matches theme
+    sparkleUnderline.style.opacity = (idx === 2 ? "0.85" : "1");
+
+    // fade name font change
+    fadeTitleChange(() => {
+      titleNames.style.fontFamily = t.titleFont;
+      titleNames.style.color = t.titleColor;
+    });
+
+    // sub fonts (anniv + countdown)
+    titleAnniv.style.fontFamily = t.subFont;
+    titleAnniv.style.color = t.annivColor;
+
+    countdownEl.style.fontFamily = t.subFont;
+    countdownEl.style.color = t.daysColor;
+
     themeIndex = idx;
     styleBottomWriterForTheme();
   }
-  applyTheme(themeIndex);
+
+  // === Daily pulse once per day ===
+  function todayKey(){
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function pulseCountdownOncePerDay(){
+    const key = "pulseDone-" + todayKey();
+    if(localStorage.getItem(key) === "1") return;
+    localStorage.setItem(key, "1");
+    countdownEl.classList.remove("pulseOnce");
+    void countdownEl.offsetWidth;
+    countdownEl.classList.add("pulseOnce");
+    setTimeout(()=>countdownEl.classList.remove("pulseOnce"), 1300);
+  }
 
   // Photos
   const photos = [
@@ -568,14 +743,16 @@ button{
 
   // Countdown
   function updateCountdown(){
-    const d = new Date("2024-09-17");
+    const d = new Date("2024-09-17T00:00:00");
     const now = new Date();
     const diff = Math.abs(now - d);
-    document.getElementById("countdown").textContent =
-      Math.floor(diff/86400000) + " days together 💕";
+    countdownEl.textContent = Math.floor(diff/86400000) + " days together 💕";
   }
-  setInterval(updateCountdown, 60000);
+
+  // Update countdown immediately, then schedule daily pulse
   updateCountdown();
+  pulseCountdownOncePerDay();
+  setInterval(updateCountdown, 60000);
 
   // Music + Voice
   function toggleMusic(){
@@ -728,6 +905,9 @@ button{
       closeThemeSheet();
     });
   });
+
+  // Start theme (and pulse on load)
+  applyTheme(themeIndex);
 })();
 </script>
 
