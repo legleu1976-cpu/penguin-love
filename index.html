@@ -13,8 +13,6 @@
 
 <style>
 :root{
-  --bg1:#ffd6e8;
-  --bg2:#fff0f7;
   --accent:#ff4081;
   --text:#111;
   --font:"Comic Sans MS", cursive;
@@ -22,6 +20,37 @@
 
   --frameGlow: rgba(255,64,129,0.45);
   --frameInset: rgba(255,255,255,0.35);
+
+  /* Theme tint layers (set per theme in JS) */
+  --tint1: #ffd6e8;
+  --tint2: #fff0f7;
+
+  /* Background photo (change this to photo2.jpg etc if you want) */
+  --bgPhoto: url("photo1.jpg");
+}
+
+/* ==== Background layers (photo + theme tint) ==== */
+body::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  background-image: var(--bgPhoto);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(2px) saturate(1.05);
+  transform: scale(1.03);
+  opacity: 0.30;               /* photo strength */
+  z-index: -2;
+}
+
+body::after{
+  content:"";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(var(--tint1), var(--tint2));
+  opacity: 0.70;               /* theme tint strength */
+  z-index: -1;
 }
 
 *{ box-sizing:border-box; }
@@ -29,7 +58,6 @@ html, body{ height:100%; margin:0; }
 
 body{
   font-family: var(--font);
-  background: linear-gradient(var(--bg1), var(--bg2));
   color: var(--text);
   overflow: hidden; /* body locked; app scrolls */
   -webkit-text-size-adjust: 100%;
@@ -78,7 +106,7 @@ button{
   width: 80%;
   max-width: 520px;
   height: 12px;
-  background: #eee;
+  background: rgba(255,255,255,0.75);
   margin: 10px auto;
   border-radius: 10px;
   overflow: hidden;
@@ -138,7 +166,7 @@ button{
     inset 0 0 22px var(--frameInset);
 }
 
-/* Bottom message (INSIDE #app so it scrolls) */
+/* Bottom message (scrolls with app) */
 #loveWriterBottom{
   width: 100%;
   max-width: 560px;
@@ -167,14 +195,12 @@ button{
   min-height: 54px;
 }
 
-/* caret while typing */
 #loveWriterBottom.caret::after{
   content:" |";
   animation: caretBlink 0.8s steps(1) infinite;
 }
 @keyframes caretBlink{ 50%{ opacity: 0; } }
 
-/* flourish after written */
 #loveWriterBottom.written{
   animation: writtenPop 900ms ease-out;
 }
@@ -184,31 +210,49 @@ button{
   100% { transform: scale(1); }
 }
 
-/* LOCK */
+/* LOCK (fixed centering) */
 #lock{
   position: fixed; inset: 0;
-  background: rgba(255,182,213,.96);
+  background: rgba(255,182,213,.90);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
+  padding: 18px;
 }
 .lockBox{
-  background: white;
+  background: rgba(255,255,255,0.92);
   padding: 20px;
   border-radius: 16px;
-  width: 85%;
+  width: 100%;
   max-width: 420px;
   box-shadow: 0 0 25px rgba(0,0,0,0.12);
+  text-align: center;            /* ✅ centers everything */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.lockBox h2, .lockBox p{
+  margin-left: auto;
+  margin-right: auto;
 }
 .lockBox input{
+  display: block;                /* ✅ centers input */
+  margin: 10px auto 0;
   padding: 10px;
-  width: 80%;
+  width: min(320px, 90%);
   border-radius: 12px;
   border: 1px solid #ccc;
   font-size: 16px;
+  text-align: center;
 }
-#status{ min-height: 18px; color: #b00020; margin-top: 10px; }
+#enterBtn{
+  display: inline-block;
+}
+#status{
+  min-height: 18px;
+  color: #b00020;
+  margin-top: 10px;
+}
 
 /* THEME SHEET */
 #sheetOverlay{
@@ -267,10 +311,9 @@ button{
     <h2>🐧 Secret Love 🐧</h2>
     <p>What’s our word?</p>
     <input id="pw" type="password" placeholder="Password" />
-    <br><br>
-    <button id="enterBtn">Enter</button>
+    <button id="enterBtn" style="margin-top:12px;">Enter</button>
     <div id="status"></div>
-    <p style="font-size:12px;opacity:.65;margin:8px 0 0;">Tip: press Return/Enter too.</p>
+    <p style="font-size:12px;opacity:.65;margin:10px 0 0;">Tip: press Return/Enter too.</p>
   </div>
 </div>
 
@@ -280,7 +323,6 @@ button{
   <p>Anniversary: September 17, 2024</p>
   <p id="countdown"></p>
 
-  <!-- NOTE: src gets auto-fixed by JS if your filename is different -->
   <img src="penguins.png" class="penguins" id="penguinImg" alt="Penguins" />
 
   <div class="meter"><div class="fill" id="fill"></div></div>
@@ -302,7 +344,6 @@ button{
     <button id="musicBtn">Play Music</button>
   </div>
 
-  <!-- Bottom message (scrolls with app) -->
   <div id="loveWriterBottom" class="caret" aria-live="polite"></div>
 </div>
 
@@ -366,40 +407,29 @@ button{
   function loadFirstWorkingImage(imgEl, candidates){
     let i = 0;
     const tryNext = () => {
-      if(i >= candidates.length){
-        showDebug("Penguin image not found.\nTried:\n- " + candidates.join("\n- "));
-        return;
-      }
+      if(i >= candidates.length){ return; }
       const test = new Image();
       const src = candidates[i++];
       test.onload = () => { imgEl.src = src; };
       test.onerror = tryNext;
-      test.src = src + "?v=" + Date.now(); // bust cache
+      test.src = src + "?v=" + Date.now();
     };
     tryNext();
   }
-
-  // Common filename variants users run into on iPhone / Dropbox
   loadFirstWorkingImage(penguinImg, [
-    "penguins.png",
-    "Penguins.png",
-    "penguins.PNG",
-    "Penguins.PNG",
-    "penguins.png.PNG",
-    "Penguins.png.PNG"
+    "penguins.png","Penguins.png","penguins.PNG","Penguins.PNG","penguins.png.PNG","Penguins.png.PNG"
   ]);
 
-  // THEMES
   const THEMES = [
-    { bg1:"#b3e5fc", bg2:"#e1f5fe", accent:"#1565c0", text:"#0b1b2b",
+    { tint1:"#b3e5fc", tint2:"#e1f5fe", accent:"#1565c0", text:"#0b1b2b",
       font:'"Trebuchet MS", Arial, sans-serif', msgBg:"rgba(21,101,192,0.45)",
       frameGlow:"rgba(33,150,243,0.55)", frameInset:"rgba(255,255,255,0.45)",
       floats:["🐧","❄️","✨","❄️","✨"] },
-    { bg1:"#ffd6e8", bg2:"#fff0f7", accent:"#ff4081", text:"#2a0b14",
+    { tint1:"#ffd6e8", tint2:"#fff0f7", accent:"#ff4081", text:"#2a0b14",
       font:'"Comic Sans MS", cursive', msgBg:"rgba(255,64,129,0.45)",
       frameGlow:"rgba(255,64,129,0.55)", frameInset:"rgba(255,255,255,0.35)",
       floats:["❤️","💖","✨","💖","❤️"] },
-    { bg1:"#2b0b17", bg2:"#4b1230", accent:"#c2185b", text:"#fff5f8",
+    { tint1:"#2b0b17", tint2:"#4b1230", accent:"#c2185b", text:"#fff5f8",
       font:'Georgia, "Times New Roman", serif', msgBg:"rgba(194,24,91,0.45)",
       frameGlow:"rgba(194,24,91,0.70)", frameInset:"rgba(0,0,0,0.35)",
       floats:["🍷","🍷","🍷","🥂","✨","🍷","🥂"] }
@@ -410,24 +440,19 @@ button{
     return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff4081";
   }
 
-  // Make the bottom message readable per theme (teal for penguin)
   function styleBottomWriterForTheme(){
     const accent = getAccent();
-
     if(themeIndex === 0){
-      // Penguin theme: teal text + lighter background
-      loveWriterBottom.style.color = "#11b7c7";               // teal
+      loveWriterBottom.style.color = "#11b7c7";
       loveWriterBottom.style.background = "rgba(255,255,255,0.70)";
       loveWriterBottom.style.textShadow = "0 2px 10px rgba(0,0,0,0.18)";
       loveWriterBottom.style.boxShadow = `0 0 0 2px rgba(17,183,199,0.30), 0 0 22px rgba(17,183,199,0.55)`;
     } else if(themeIndex === 2){
-      // Wine theme: keep white but darker glass background
       loveWriterBottom.style.color = "rgba(255,255,255,0.97)";
       loveWriterBottom.style.background = "rgba(0,0,0,0.28)";
       loveWriterBottom.style.textShadow = "0 2px 12px rgba(0,0,0,0.35)";
       loveWriterBottom.style.boxShadow = `0 0 0 2px rgba(255,255,255,0.22), 0 0 22px ${accent}`;
     } else {
-      // Heart theme: white on dark-ish glass
       loveWriterBottom.style.color = "rgba(255,255,255,0.97)";
       loveWriterBottom.style.background = "rgba(0,0,0,0.20)";
       loveWriterBottom.style.textShadow = "0 2px 12px rgba(0,0,0,0.32)";
@@ -437,8 +462,8 @@ button{
 
   function applyTheme(idx){
     const t = THEMES[idx];
-    document.documentElement.style.setProperty("--bg1", t.bg1);
-    document.documentElement.style.setProperty("--bg2", t.bg2);
+    document.documentElement.style.setProperty("--tint1", t.tint1);
+    document.documentElement.style.setProperty("--tint2", t.tint2);
     document.documentElement.style.setProperty("--accent", t.accent);
     document.documentElement.style.setProperty("--text", t.text);
     document.documentElement.style.setProperty("--font", t.font);
@@ -446,7 +471,6 @@ button{
     document.documentElement.style.setProperty("--frameGlow", t.frameGlow);
     document.documentElement.style.setProperty("--frameInset", t.frameInset);
     themeIndex = idx;
-
     styleBottomWriterForTheme();
   }
   applyTheme(themeIndex);
@@ -600,7 +624,6 @@ button{
   let writerRunning = false;
 
   function bottomLoveText(){
-    // You can change these lines anytime:
     if(themeIndex === 0) return "I love you sooo very much, Sarah 🐧";
     if(themeIndex === 2) return "I love you sooo very much, Sarah 🍷";
     return "I love you sooo very much, Sarah ❤️";
