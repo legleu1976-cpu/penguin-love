@@ -43,7 +43,6 @@ body{
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   text-align: center;
-
   padding-top: calc(10px + env(safe-area-inset-top));
   padding-bottom: calc(130px + env(safe-area-inset-bottom));
 }
@@ -66,8 +65,12 @@ button{
 
 .penguins{
   width: 280px;
+  max-width: 88vw;
   cursor: pointer;
   animation: pulse 2s infinite alternate;
+  display: block;
+  margin: 6px auto 0;
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,0.14));
 }
 @keyframes pulse{ from{transform:scale(1);} to{transform:scale(1.06);} }
 
@@ -144,9 +147,6 @@ button{
 
   border-radius: 18px;
   background: rgba(0,0,0,0.18);
-  box-shadow:
-    0 0 0 2px rgba(255,255,255,0.28),
-    0 0 22px rgba(0,0,0,0.08);
 
   font-family: "Snell Roundhand", "Apple Chancery", "Zapfino", "Bradley Hand", cursive;
   font-size: 26px;
@@ -164,7 +164,6 @@ button{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   min-height: 54px;
 }
 
@@ -281,6 +280,7 @@ button{
   <p>Anniversary: September 17, 2024</p>
   <p id="countdown"></p>
 
+  <!-- NOTE: src gets auto-fixed by JS if your filename is different -->
   <img src="penguins.png" class="penguins" id="penguinImg" alt="Penguins" />
 
   <div class="meter"><div class="fill" id="fill"></div></div>
@@ -302,7 +302,7 @@ button{
     <button id="musicBtn">Play Music</button>
   </div>
 
-  <!-- BOTTOM message (scrolls with the app because it is inside #app) -->
+  <!-- Bottom message (scrolls with app) -->
   <div id="loveWriterBottom" class="caret" aria-live="polite"></div>
 </div>
 
@@ -339,7 +339,6 @@ button{
 
   const app = document.getElementById("app");
   const floatLayer = document.getElementById("floatLayer");
-  const loveWriterBottom = document.getElementById("loveWriterBottom");
 
   const music = document.getElementById("music");
   const voice = document.getElementById("voice");
@@ -357,9 +356,38 @@ button{
   const noteBtn = document.getElementById("noteBtn");
   const themesBtn = document.getElementById("themesBtn");
 
+  const loveWriterBottom = document.getElementById("loveWriterBottom");
+
   const sheetOverlay = document.getElementById("sheetOverlay");
   const themeSheet = document.getElementById("themeSheet");
   const closeSheetBtn = document.getElementById("closeSheetBtn");
+
+  // Try to auto-fix penguin filename issues
+  function loadFirstWorkingImage(imgEl, candidates){
+    let i = 0;
+    const tryNext = () => {
+      if(i >= candidates.length){
+        showDebug("Penguin image not found.\nTried:\n- " + candidates.join("\n- "));
+        return;
+      }
+      const test = new Image();
+      const src = candidates[i++];
+      test.onload = () => { imgEl.src = src; };
+      test.onerror = tryNext;
+      test.src = src + "?v=" + Date.now(); // bust cache
+    };
+    tryNext();
+  }
+
+  // Common filename variants users run into on iPhone / Dropbox
+  loadFirstWorkingImage(penguinImg, [
+    "penguins.png",
+    "Penguins.png",
+    "penguins.PNG",
+    "Penguins.PNG",
+    "penguins.png.PNG",
+    "Penguins.png.PNG"
+  ]);
 
   // THEMES
   const THEMES = [
@@ -382,6 +410,31 @@ button{
     return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff4081";
   }
 
+  // Make the bottom message readable per theme (teal for penguin)
+  function styleBottomWriterForTheme(){
+    const accent = getAccent();
+
+    if(themeIndex === 0){
+      // Penguin theme: teal text + lighter background
+      loveWriterBottom.style.color = "#11b7c7";               // teal
+      loveWriterBottom.style.background = "rgba(255,255,255,0.70)";
+      loveWriterBottom.style.textShadow = "0 2px 10px rgba(0,0,0,0.18)";
+      loveWriterBottom.style.boxShadow = `0 0 0 2px rgba(17,183,199,0.30), 0 0 22px rgba(17,183,199,0.55)`;
+    } else if(themeIndex === 2){
+      // Wine theme: keep white but darker glass background
+      loveWriterBottom.style.color = "rgba(255,255,255,0.97)";
+      loveWriterBottom.style.background = "rgba(0,0,0,0.28)";
+      loveWriterBottom.style.textShadow = "0 2px 12px rgba(0,0,0,0.35)";
+      loveWriterBottom.style.boxShadow = `0 0 0 2px rgba(255,255,255,0.22), 0 0 22px ${accent}`;
+    } else {
+      // Heart theme: white on dark-ish glass
+      loveWriterBottom.style.color = "rgba(255,255,255,0.97)";
+      loveWriterBottom.style.background = "rgba(0,0,0,0.20)";
+      loveWriterBottom.style.textShadow = "0 2px 12px rgba(0,0,0,0.32)";
+      loveWriterBottom.style.boxShadow = `0 0 0 2px rgba(255,255,255,0.26), 0 0 22px ${accent}`;
+    }
+  }
+
   function applyTheme(idx){
     const t = THEMES[idx];
     document.documentElement.style.setProperty("--bg1", t.bg1);
@@ -394,9 +447,7 @@ button{
     document.documentElement.style.setProperty("--frameInset", t.frameInset);
     themeIndex = idx;
 
-    // glow for bottom message
-    const accent = getAccent();
-    loveWriterBottom.style.boxShadow = `0 0 0 2px rgba(255,255,255,0.28), 0 0 22px ${accent}`;
+    styleBottomWriterForTheme();
   }
   applyTheme(themeIndex);
 
@@ -512,7 +563,6 @@ button{
       musicBtn.textContent = "Play Music";
     }
   }
-
   function playVoice(){
     if(!music.paused){
       music.pause();
@@ -546,11 +596,13 @@ button{
     setTimeout(()=>{ sheetOverlay.style.display = "none"; }, 200);
   }
 
-  // ===== Bottom typewriter (loops 3x then flourish, repeats forever) =====
+  // Bottom typewriter (loops 3x then flourish, repeats forever)
   let writerRunning = false;
 
   function bottomLoveText(){
-   _priv = themeIndex; // (no-op to keep themeIndex referenced)
+    // You can change these lines anytime:
+    if(themeIndex === 0) return "I love you sooo very much, Sarah 🐧";
+    if(themeIndex === 2) return "I love you sooo very much, Sarah 🍷";
     return "I love you sooo very much, Sarah ❤️";
   }
 
@@ -571,6 +623,7 @@ button{
       loveWriterBottom.classList.add("caret");
       loveWriterBottom.textContent = "";
       idx = 0;
+      styleBottomWriterForTheme();
     };
 
     const typeStep = () => {
@@ -586,11 +639,9 @@ button{
 
         if (loops >= 3) {
           loveWriterBottom.classList.add("written");
-
           for(let k=0;k<10;k++){
             setTimeout(()=>spawnEmojiFloat(50 + (Math.random()*18 - 9), true), k*45);
           }
-
           setTimeout(() => {
             loops = 0;
             resetForTyping();
@@ -605,7 +656,6 @@ button{
       }
     };
 
-    loveWriterBottom.style.boxShadow = `0 0 0 2px rgba(255,255,255,0.28), 0 0 22px ${getAccent()}`;
     resetForTyping();
     typeStep();
   }
@@ -655,7 +705,6 @@ button{
       closeThemeSheet();
     });
   });
-
 })();
 </script>
 
