@@ -35,24 +35,23 @@ body{
   font-family: var(--font);
   background: linear-gradient(var(--bg1), var(--bg2));
   color: var(--text);
-  overflow: hidden; /* body stays locked; app content scrolls */
+  overflow: hidden; /* body locked; app scrolls */
   -webkit-text-size-adjust: 100%;
 }
 
-/* Scrollable app container (iPhone-safe) */
+/* Scrollable app container */
 #app{
   position: relative;
-  height: 100dvh;              /* better on iOS than 100vh */
+  height: 100dvh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   text-align: center;
 
   padding-top: calc(10px + env(safe-area-inset-top));
-  padding-bottom: calc(110px + env(safe-area-inset-bottom)); /* room for bottom UI + home bar */
+  padding-bottom: calc(110px + env(safe-area-inset-bottom));
 }
 
-/* Keep content above float layer */
 #app > *{
   position: relative;
   z-index: 3;
@@ -119,14 +118,13 @@ button{
   text-shadow: 0 0 6px rgba(0,0,0,0.6);
 }
 
-/* Float layer (prevents layout jank) */
+/* Float layer */
 #floatLayer{
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 2;
 }
-
 .float{
   position: absolute;
   pointer-events: none;
@@ -144,6 +142,64 @@ button{
     0 0 0 2px rgba(255,255,255,0.60),
     0 0 22px var(--frameGlow),
     inset 0 0 22px var(--frameInset);
+}
+
+/* Fancy looping "I love you" writer */
+#loveWriter{
+  position: fixed;
+  left: 50%;
+  top: calc(18px + env(safe-area-inset-top));
+  transform: translateX(-50%);
+  z-index: 6;
+  pointer-events: none;
+
+  padding: 10px 16px;
+  border-radius: 999px;
+
+  font-family: "Snell Roundhand", "Apple Chancery", "Zapfino", "Bradley Hand", cursive;
+  font-size: 22px;
+  letter-spacing: 0.2px;
+
+  color: rgba(255,255,255,0.97);
+  background: rgba(0,0,0,0.22);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  text-shadow:
+    0 2px 10px rgba(0,0,0,0.35),
+    0 0 12px rgba(255,255,255,0.25);
+
+  opacity: 0;
+}
+
+#loveWriter.caret::after{
+  content: " |";
+  opacity: 0.9;
+  animation: caretBlink 0.8s steps(1) infinite;
+}
+@keyframes caretBlink{
+  50%{ opacity: 0; }
+}
+#loveWriter.show{
+  opacity: 1;
+  transition: opacity 300ms ease;
+}
+#loveWriter.written{
+  animation: writtenPop 900ms ease-out;
+}
+@keyframes writtenPop{
+  0%   { transform: translateX(-50%) scale(1); }
+  45%  { transform: translateX(-50%) scale(1.08); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+#loveWriter.finale{
+  animation: finaleGlow 1200ms ease-in-out;
+}
+@keyframes finaleGlow{
+  0%   { transform: translateX(-50%) scale(1); filter: brightness(1); }
+  35%  { transform: translateX(-50%) scale(1.15); filter: brightness(1.3); }
+  70%  { transform: translateX(-50%) scale(1.05); filter: brightness(1.15); }
+  100% { transform: translateX(-50%) scale(1); filter: brightness(1); }
 }
 
 /* LOCK */
@@ -204,7 +260,7 @@ button{
   margin: 6px;
 }
 
-/* Debug (only if errors) */
+/* Debug box (only shown if JS errors) */
 #debug{
   position: fixed;
   left: 10px; right: 10px;
@@ -225,6 +281,7 @@ button{
 <body>
 <div class="app-frame"></div>
 <div id="floatLayer"></div>
+<div id="loveWriter" aria-hidden="true"></div>
 <div id="debug"></div>
 
 <!-- LOCK -->
@@ -297,8 +354,10 @@ button{
   window.addEventListener("error", (e) => showDebug("ERROR: " + (e.message||e.error) + "\n" + (e.filename||"") + ":" + (e.lineno||"")));
   window.addEventListener("unhandledrejection", (e) => showDebug("PROMISE ERROR: " + (e.reason?.message || e.reason)));
 
+  /* ================== EDIT THESE ================== */
   const SECRET = "love";
-  let photoSpeed = 9000;
+  let photoSpeed = 9000; // ms (slower = bigger). example: 12000
+  /* =============================================== */
 
   // DOM
   const lock = document.getElementById("lock");
@@ -308,6 +367,7 @@ button{
 
   const app = document.getElementById("app");
   const floatLayer = document.getElementById("floatLayer");
+  const loveWriter = document.getElementById("loveWriter");
 
   const music = document.getElementById("music");
   const voice = document.getElementById("voice");
@@ -329,28 +389,45 @@ button{
   const themeSheet = document.getElementById("themeSheet");
   const closeSheetBtn = document.getElementById("closeSheetBtn");
 
-  // THEMES
+  // THEMES (colors + border + floaties)
   const THEMES = [
     {
-      bg1:"#b3e5fc", bg2:"#e1f5fe", accent:"#1565c0", text:"#0b1b2b",
-      font:'"Trebuchet MS", Arial, sans-serif', msgBg:"rgba(21,101,192,0.45)",
-      frameGlow:"rgba(33,150,243,0.55)", frameInset:"rgba(255,255,255,0.45)",
+      name:"🐧 Penguin",
+      bg1:"#b3e5fc", bg2:"#e1f5fe",
+      accent:"#1565c0", text:"#0b1b2b",
+      font:'"Trebuchet MS", Arial, sans-serif',
+      msgBg:"rgba(21,101,192,0.45)",
+      frameGlow:"rgba(33,150,243,0.55)",
+      frameInset:"rgba(255,255,255,0.45)",
       floats:["🐧","❄️","✨","❄️","✨"]
     },
     {
-      bg1:"#ffd6e8", bg2:"#fff0f7", accent:"#ff4081", text:"#2a0b14",
-      font:'"Comic Sans MS", cursive', msgBg:"rgba(255,64,129,0.45)",
-      frameGlow:"rgba(255,64,129,0.55)", frameInset:"rgba(255,255,255,0.35)",
+      name:"❤️ Heart",
+      bg1:"#ffd6e8", bg2:"#fff0f7",
+      accent:"#ff4081", text:"#2a0b14",
+      font:'"Comic Sans MS", cursive',
+      msgBg:"rgba(255,64,129,0.45)",
+      frameGlow:"rgba(255,64,129,0.55)",
+      frameInset:"rgba(255,255,255,0.35)",
       floats:["❤️","💖","✨","💖","❤️"]
     },
     {
-      bg1:"#2b0b17", bg2:"#4b1230", accent:"#c2185b", text:"#fff5f8",
-      font:'Georgia, "Times New Roman", serif', msgBg:"rgba(194,24,91,0.45)",
-      frameGlow:"rgba(194,24,91,0.70)", frameInset:"rgba(0,0,0,0.35)",
+      name:"🍷 Wine",
+      bg1:"#2b0b17", bg2:"#4b1230",
+      accent:"#c2185b", text:"#fff5f8",
+      font:'Georgia, "Times New Roman", serif',
+      msgBg:"rgba(194,24,91,0.45)",
+      frameGlow:"rgba(194,24,91,0.70)",
+      frameInset:"rgba(0,0,0,0.35)",
       floats:["🍷","🍷","🍷","🥂","✨","🍷","🥂"]
     }
   ];
   let themeIndex = 1;
+
+  function setWriterColorForTheme(){
+    const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff4081";
+    loveWriter.style.boxShadow = `0 0 0 2px rgba(255,255,255,0.35), 0 0 20px ${accent}`;
+  }
 
   function applyTheme(idx){
     const t = THEMES[idx];
@@ -362,7 +439,9 @@ button{
     document.documentElement.style.setProperty("--msgBg", t.msgBg);
     document.documentElement.style.setProperty("--frameGlow", t.frameGlow);
     document.documentElement.style.setProperty("--frameInset", t.frameInset);
+
     themeIndex = idx;
+    setWriterColorForTheme();
   }
   applyTheme(themeIndex);
 
@@ -400,7 +479,7 @@ button{
     autoRotate = setInterval(nextPhoto, photoSpeed);
   }
 
-  // Floaties (throttled + capped for smooth scrolling)
+  // Floaties (smooth)
   let floatTimer = null;
   const MAX_FLOATS = 28;
 
@@ -437,7 +516,7 @@ button{
 
   function startFloaties(){
     if(floatTimer) return;
-    floatTimer = setInterval(() => spawnFloat(), 800); // slower = smoother scrolling
+    floatTimer = setInterval(() => spawnFloat(), 800);
   }
 
   function burstAtPenguin(){
@@ -478,6 +557,7 @@ button{
       musicBtn.textContent = "Play Music";
     }
   }
+
   function playVoice(){
     if(!music.paused){
       music.pause();
@@ -511,6 +591,83 @@ button{
     setTimeout(()=>{ sheetOverlay.style.display = "none"; }, 200);
   }
 
+  // ===== Fancy "I love you" writer (types, loops 3x, then finale) =====
+  let writerRunning = false;
+  let writerLoopCount = 0;
+  let writerTimer = null;
+
+  function themeLoveText(){
+    // Customize the exact line here if you want:
+    if (themeIndex === 0) return "I love you sooo very much, Sarah 🐧";
+    if (themeIndex === 2) return "I love you sooo very much, Sarah 🍷";
+    return "I love you sooo very much, Sarah ❤️";
+  }
+
+  function burstCelebration(){
+    for(let k=0; k<18; k++){
+      const x = 50 + (Math.random()*18 - 9);
+      setTimeout(()=>spawnFloat(x, true), k*30);
+    }
+  }
+
+  function startLoveWriter(){
+    if (writerRunning) return;
+    writerRunning = true;
+    writerLoopCount = 0;
+
+    const typeSpeed = 55;     // ms per character
+    const holdAfter = 750;    // pause after full line typed
+    const holdBetween = 420;  // pause between loops
+
+    const runOnce = () => {
+      if (!writerRunning) return;
+
+      const full = themeLoveText();
+      setWriterColorForTheme();
+
+      loveWriter.textContent = "";
+      loveWriter.className = "show caret";
+
+      let idx = 0;
+
+      const step = () => {
+        if (!writerRunning) return;
+
+        idx++;
+        loveWriter.textContent = full.slice(0, idx);
+
+        if (idx < full.length) {
+          writerTimer = setTimeout(step, typeSpeed);
+        } else {
+          loveWriter.classList.remove("caret");
+          loveWriter.classList.add("written");
+
+          writerLoopCount++;
+
+          if (writerLoopCount >= 3) {
+            loveWriter.classList.add("finale");
+            burstCelebration();
+
+            writerTimer = setTimeout(() => {
+              loveWriter.className = "show";
+              writerLoopCount = 0;
+              writerTimer = setTimeout(runOnce, 900);
+            }, holdAfter + 650);
+          } else {
+            writerTimer = setTimeout(() => {
+              loveWriter.className = "show";
+              writerTimer = setTimeout(runOnce, holdBetween);
+            }, holdAfter);
+          }
+        }
+      };
+
+      step();
+    };
+
+    runOnce();
+  }
+
   // Unlock
   function unlock(){
     const typed = (pw.value || "").trim();
@@ -522,6 +679,7 @@ button{
 
     startFloaties();
     startAutoRotate();
+    startLoveWriter();
 
     // iOS gesture → start music
     if(music.paused){
@@ -529,7 +687,7 @@ button{
       musicBtn.textContent = "Pause Music";
     }
 
-    // Smooth start: scroll to top
+    // smooth start: to top
     app.scrollTo({ top: 0, behavior: "instant" });
   }
 
@@ -557,6 +715,7 @@ button{
       closeThemeSheet();
     });
   });
+
 })();
 </script>
 
