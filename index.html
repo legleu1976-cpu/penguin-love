@@ -26,10 +26,7 @@
 
 *{ box-sizing:border-box; }
 
-html, body{
-  height:100%;
-  margin:0;
-}
+html, body{ height:100%; margin:0; }
 
 body{
   font-family: var(--font);
@@ -39,7 +36,7 @@ body{
   -webkit-text-size-adjust: 100%;
 }
 
-/* Scrollable app container */
+/* Scrollable app container (iPhone-safe) */
 #app{
   position: relative;
   height: 100dvh;
@@ -52,10 +49,7 @@ body{
   padding-bottom: calc(110px + env(safe-area-inset-bottom));
 }
 
-#app > *{
-  position: relative;
-  z-index: 3;
-}
+#app > *{ position: relative; z-index: 3; }
 
 h2{ margin: 14px 0 4px; }
 p{ margin: 6px 0; }
@@ -69,7 +63,6 @@ button{
   font-size: 16px;
   margin: 6px;
 }
-
 .smallBtn{ padding: 8px 14px; font-size: 15px; }
 
 .penguins{
@@ -90,20 +83,19 @@ button{
 }
 .fill{ height:100%; width:0; background: var(--accent); transition: width .2s; }
 
+/* Gallery layout (message never overlaps buttons) */
 .galleryWrap{
   position: relative;
   display: inline-block;
   margin-top: 10px;
   padding-bottom: 64px; /* room for buttons */
 }
-
 #gallery{
   width: 230px;
   border-radius: 12px;
   transition: opacity .9s;
   box-shadow: 0 0 18px rgba(0,0,0,0.12);
 }
-
 #photoMessage{
   position: absolute;
   left: 0; right: 0;
@@ -131,33 +123,17 @@ button{
   will-change: transform, opacity;
 }
 
-/* Fancy border frame */
-.app-frame{
-  position: fixed;
-  inset: 10px;
-  border-radius: 24px;
-  pointer-events: none;
-  z-index: 5;
-  box-shadow:
-    0 0 0 2px rgba(255,255,255,0.60),
-    0 0 22px var(--frameGlow),
-    inset 0 0 22px var(--frameInset);
-}
-
-/* Fancy looping "I love you" writer */
-#loveWriter{
-  position: fixed;
-  left: 50%;
-  top: calc(18px + env(safe-area-inset-top));
-  transform: translateX(-50%);
-  z-index: 6;
-  pointer-events: none;
-
-  padding: 10px 16px;
+/* Floating love text particle */
+.loveFloat{
+  position:absolute;
+  pointer-events:none;
+  z-index:2;
+  padding: 8px 14px;
   border-radius: 999px;
 
   font-family: "Snell Roundhand", "Apple Chancery", "Zapfino", "Bradley Hand", cursive;
   font-size: 22px;
+  line-height: 1;
   letter-spacing: 0.2px;
 
   color: rgba(255,255,255,0.97);
@@ -169,37 +145,35 @@ button{
     0 2px 10px rgba(0,0,0,0.35),
     0 0 12px rgba(255,255,255,0.25);
 
-  opacity: 0;
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+.loveFloat.caret::after{
+  content:" |";
+  animation: lfCaret 0.8s steps(1) infinite;
+}
+@keyframes lfCaret{ 50%{ opacity:0; } }
+
+.loveFloat.written{
+  animation: lfWritten 900ms ease-out;
+}
+@keyframes lfWritten{
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
 }
 
-#loveWriter.caret::after{
-  content: " |";
-  opacity: 0.9;
-  animation: caretBlink 0.8s steps(1) infinite;
-}
-@keyframes caretBlink{
-  50%{ opacity: 0; }
-}
-#loveWriter.show{
-  opacity: 1;
-  transition: opacity 300ms ease;
-}
-#loveWriter.written{
-  animation: writtenPop 900ms ease-out;
-}
-@keyframes writtenPop{
-  0%   { transform: translateX(-50%) scale(1); }
-  45%  { transform: translateX(-50%) scale(1.08); }
-  100% { transform: translateX(-50%) scale(1); }
-}
-#loveWriter.finale{
-  animation: finaleGlow 1200ms ease-in-out;
-}
-@keyframes finaleGlow{
-  0%   { transform: translateX(-50%) scale(1); filter: brightness(1); }
-  35%  { transform: translateX(-50%) scale(1.15); filter: brightness(1.3); }
-  70%  { transform: translateX(-50%) scale(1.05); filter: brightness(1.15); }
-  100% { transform: translateX(-50%) scale(1); filter: brightness(1); }
+/* Fancy border frame */
+.app-frame{
+  position: fixed;
+  inset: 10px;
+  border-radius: 24px;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.60),
+    0 0 22px var(--frameGlow),
+    inset 0 0 22px var(--frameInset);
 }
 
 /* LOCK */
@@ -226,11 +200,7 @@ button{
   border: 1px solid #ccc;
   font-size: 16px;
 }
-#status{
-  min-height: 18px;
-  color: #b00020;
-  margin-top: 10px;
-}
+#status{ min-height: 18px; color: #b00020; margin-top: 10px; }
 
 /* THEME SHEET */
 #sheetOverlay{
@@ -260,7 +230,7 @@ button{
   margin: 6px;
 }
 
-/* Debug box (only shown if JS errors) */
+/* Debug box (only if JS errors) */
 #debug{
   position: fixed;
   left: 10px; right: 10px;
@@ -281,7 +251,6 @@ button{
 <body>
 <div class="app-frame"></div>
 <div id="floatLayer"></div>
-<div id="loveWriter" aria-hidden="true"></div>
 <div id="debug"></div>
 
 <!-- LOCK -->
@@ -367,7 +336,6 @@ button{
 
   const app = document.getElementById("app");
   const floatLayer = document.getElementById("floatLayer");
-  const loveWriter = document.getElementById("loveWriter");
 
   const music = document.getElementById("music");
   const voice = document.getElementById("voice");
@@ -389,7 +357,7 @@ button{
   const themeSheet = document.getElementById("themeSheet");
   const closeSheetBtn = document.getElementById("closeSheetBtn");
 
-  // THEMES (colors + border + floaties)
+  // THEMES
   const THEMES = [
     {
       name:"🐧 Penguin",
@@ -424,11 +392,6 @@ button{
   ];
   let themeIndex = 1;
 
-  function setWriterColorForTheme(){
-    const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff4081";
-    loveWriter.style.boxShadow = `0 0 0 2px rgba(255,255,255,0.35), 0 0 20px ${accent}`;
-  }
-
   function applyTheme(idx){
     const t = THEMES[idx];
     document.documentElement.style.setProperty("--bg1", t.bg1);
@@ -439,9 +402,7 @@ button{
     document.documentElement.style.setProperty("--msgBg", t.msgBg);
     document.documentElement.style.setProperty("--frameGlow", t.frameGlow);
     document.documentElement.style.setProperty("--frameInset", t.frameInset);
-
     themeIndex = idx;
-    setWriterColorForTheme();
   }
   applyTheme(themeIndex);
 
@@ -479,11 +440,18 @@ button{
     autoRotate = setInterval(nextPhoto, photoSpeed);
   }
 
-  // Floaties (smooth)
+  // ===== Floaties (emojis + typed "I love you" particle) =====
   let floatTimer = null;
   const MAX_FLOATS = 28;
 
-  function spawnFloat(xPercent=null, burst=false){
+  const LOVE_EVERY = 6500;
+  let loveTimer = null;
+
+  function getAccent(){
+    return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff4081";
+  }
+
+  function spawnEmojiFloat(xPercent=null, burst=false){
     if(floatLayer.childElementCount >= MAX_FLOATS) return;
 
     const t = THEMES[themeIndex];
@@ -514,16 +482,94 @@ button{
     setTimeout(()=>f.remove(), dur*1000 + 150);
   }
 
+  function spawnLoveFloat(){
+    if(floatLayer.childElementCount >= MAX_FLOATS) return;
+
+    const accent = getAccent();
+    const full =
+      themeIndex === 0 ? "I love you sooo very much, Sarah 🐧" :
+      themeIndex === 2 ? "I love you sooo very much, Sarah 🍷" :
+                         "I love you sooo very much, Sarah ❤️";
+
+    const node = document.createElement("div");
+    node.className = "loveFloat caret";
+    node.style.left = (10 + Math.random()*80) + "vw";
+    node.style.top  = (60 + Math.random()*35) + "vh";
+    node.style.boxShadow = `0 0 0 2px rgba(255,255,255,0.30), 0 0 22px ${accent}`;
+    floatLayer.appendChild(node);
+
+    const drift = (Math.random()*90 - 45);
+    const spin  = (Math.random()*60 - 30);
+    const dur   = 6500;
+
+    const anim = node.animate(
+      [
+        { transform:`translate(0, 0) rotate(0deg)`, opacity: 0 },
+        { transform:`translate(${drift}px, -80vh) rotate(${spin}deg)`, opacity: 1, offset: 0.15 },
+        { transform:`translate(${drift}px, -95vh) rotate(${spin}deg)`, opacity: 0 }
+      ],
+      { duration: dur, easing: "linear", fill: "forwards" }
+    );
+
+    let loop = 0;
+    let idx = 0;
+    const typeSpeed = 45;
+    const pauseAfter = 650;
+    const pauseBetween = 250;
+
+    const step = () => {
+      if (!node.isConnected) return;
+
+      idx++;
+      node.textContent = full.slice(0, idx);
+
+      if (idx < full.length) {
+        setTimeout(step, typeSpeed);
+      } else {
+        loop++;
+        if (loop < 3) {
+          setTimeout(() => {
+            if (!node.isConnected) return;
+            idx = 0;
+            node.textContent = "";
+            node.classList.add("caret");
+            setTimeout(step, pauseBetween);
+          }, pauseAfter);
+        } else {
+          node.classList.remove("caret");
+          node.classList.add("written");
+
+          // small celebratory burst near it
+          for(let k=0;k<8;k++){
+            const x = parseFloat(node.style.left) + (Math.random()*10 - 5);
+            setTimeout(()=>spawnEmojiFloat(Math.max(5, Math.min(95, x)), true), k*40);
+          }
+        }
+      }
+    };
+
+    node.textContent = "";
+    setTimeout(step, 200);
+
+    anim.onfinish = () => node.remove();
+  }
+
   function startFloaties(){
     if(floatTimer) return;
-    floatTimer = setInterval(() => spawnFloat(), 800);
+    floatTimer = setInterval(() => spawnEmojiFloat(), 800);
+  }
+
+  function startLoveLoop(){
+    if(loveTimer) return;
+    setTimeout(spawnLoveFloat, 900);
+    loveTimer = setInterval(spawnLoveFloat, LOVE_EVERY);
   }
 
   function burstAtPenguin(){
     const base = 50 + (Math.random()*6 - 3);
     for(let k=0; k<12; k++){
       const x = base + (Math.random()*14 - 7);
-      setTimeout(()=>spawnFloat(x, true), k*40);
+      setTimeout(()=>spawnEmojiFloat(x, true), k*40);
     }
   }
 
@@ -591,83 +637,6 @@ button{
     setTimeout(()=>{ sheetOverlay.style.display = "none"; }, 200);
   }
 
-  // ===== Fancy "I love you" writer (types, loops 3x, then finale) =====
-  let writerRunning = false;
-  let writerLoopCount = 0;
-  let writerTimer = null;
-
-  function themeLoveText(){
-    // Customize the exact line here if you want:
-    if (themeIndex === 0) return "I love you sooo very much, Sarah 🐧";
-    if (themeIndex === 2) return "I love you sooo very much, Sarah 🍷";
-    return "I love you sooo very much, Sarah ❤️";
-  }
-
-  function burstCelebration(){
-    for(let k=0; k<18; k++){
-      const x = 50 + (Math.random()*18 - 9);
-      setTimeout(()=>spawnFloat(x, true), k*30);
-    }
-  }
-
-  function startLoveWriter(){
-    if (writerRunning) return;
-    writerRunning = true;
-    writerLoopCount = 0;
-
-    const typeSpeed = 55;     // ms per character
-    const holdAfter = 750;    // pause after full line typed
-    const holdBetween = 420;  // pause between loops
-
-    const runOnce = () => {
-      if (!writerRunning) return;
-
-      const full = themeLoveText();
-      setWriterColorForTheme();
-
-      loveWriter.textContent = "";
-      loveWriter.className = "show caret";
-
-      let idx = 0;
-
-      const step = () => {
-        if (!writerRunning) return;
-
-        idx++;
-        loveWriter.textContent = full.slice(0, idx);
-
-        if (idx < full.length) {
-          writerTimer = setTimeout(step, typeSpeed);
-        } else {
-          loveWriter.classList.remove("caret");
-          loveWriter.classList.add("written");
-
-          writerLoopCount++;
-
-          if (writerLoopCount >= 3) {
-            loveWriter.classList.add("finale");
-            burstCelebration();
-
-            writerTimer = setTimeout(() => {
-              loveWriter.className = "show";
-              writerLoopCount = 0;
-              writerTimer = setTimeout(runOnce, 900);
-            }, holdAfter + 650);
-          } else {
-            writerTimer = setTimeout(() => {
-              loveWriter.className = "show";
-              writerTimer = setTimeout(runOnce, holdBetween);
-            }, holdAfter);
-          }
-        }
-      };
-
-      step();
-    };
-
-    runOnce();
-  }
-
   // Unlock
   function unlock(){
     const typed = (pw.value || "").trim();
@@ -678,8 +647,8 @@ button{
     lock.style.display = "none";
 
     startFloaties();
+    startLoveLoop();
     startAutoRotate();
-    startLoveWriter();
 
     // iOS gesture → start music
     if(music.paused){
@@ -687,7 +656,6 @@ button{
       musicBtn.textContent = "Pause Music";
     }
 
-    // smooth start: to top
     app.scrollTo({ top: 0, behavior: "instant" });
   }
 
