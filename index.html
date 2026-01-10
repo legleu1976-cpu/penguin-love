@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Penguin Love 🐧❤️</title>
 
+<!-- iPhone Home Screen App -->
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Penguin Love">
+
 <style>
 :root{
   --bg1:#ffd6e8;
@@ -13,17 +19,43 @@
   --text:#111;
   --font:"Comic Sans MS", cursive;
   --msgBg: rgba(0,0,0,0.35);
+
+  --frameGlow: rgba(255,64,129,0.45);
+  --frameInset: rgba(255,255,255,0.35);
 }
 
 *{ box-sizing:border-box; }
 
-body{
+html, body{
+  height:100%;
   margin:0;
-  text-align:center;
+}
+
+body{
   font-family: var(--font);
   background: linear-gradient(var(--bg1), var(--bg2));
   color: var(--text);
-  overflow:hidden;
+  overflow: hidden; /* body stays locked; app content scrolls */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Scrollable app container (iPhone-safe) */
+#app{
+  position: relative;
+  height: 100dvh;              /* better on iOS than 100vh */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  text-align: center;
+
+  padding-top: calc(10px + env(safe-area-inset-top));
+  padding-bottom: calc(110px + env(safe-area-inset-bottom)); /* room for bottom UI + home bar */
+}
+
+/* Keep content above float layer */
+#app > *{
+  position: relative;
+  z-index: 3;
 }
 
 h2{ margin: 14px 0 4px; }
@@ -76,7 +108,7 @@ button{
 #photoMessage{
   position: absolute;
   left: 0; right: 0;
-  bottom: 64px; /* sits above buttons */
+  bottom: 64px;
   padding: 6px 0;
   background: var(--msgBg);
   color: white;
@@ -87,11 +119,31 @@ button{
   text-shadow: 0 0 6px rgba(0,0,0,0.6);
 }
 
-/* floating emoji particles */
+/* Float layer (prevents layout jank) */
+#floatLayer{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .float{
   position: absolute;
   pointer-events: none;
   will-change: transform, opacity;
+}
+
+/* Fancy border frame */
+.app-frame{
+  position: fixed;
+  inset: 10px;
+  border-radius: 24px;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.60),
+    0 0 22px var(--frameGlow),
+    inset 0 0 22px var(--frameInset);
 }
 
 /* LOCK */
@@ -152,7 +204,7 @@ button{
   margin: 6px;
 }
 
-/* Debug box (only shown if JS errors) */
+/* Debug (only if errors) */
 #debug{
   position: fixed;
   left: 10px; right: 10px;
@@ -171,7 +223,8 @@ button{
 </head>
 
 <body>
-
+<div class="app-frame"></div>
+<div id="floatLayer"></div>
 <div id="debug"></div>
 
 <!-- LOCK -->
@@ -187,29 +240,39 @@ button{
   </div>
 </div>
 
-<h2>Sarah ❤️ Ricardo</h2>
-<p>Anniversary: September 17, 2024</p>
-<p id="countdown"></p>
+<!-- SCROLLABLE APP -->
+<div id="app">
+  <h2>Sarah ❤️ Ricardo</h2>
+  <p>Anniversary: September 17, 2024</p>
+  <p id="countdown"></p>
 
-<img src="penguins.png" class="penguins" id="penguinImg" alt="Penguins" />
+  <img src="penguins.png" class="penguins" id="penguinImg" alt="Penguins" />
 
-<div class="meter"><div class="fill" id="fill"></div></div>
+  <div class="meter"><div class="fill" id="fill"></div></div>
 
-<div class="galleryWrap">
-  <img id="gallery" src="photo1.jpg" alt="Photo" />
-  <div id="photoMessage">Our first memory together 💖</div>
+  <div class="galleryWrap">
+    <img id="gallery" src="photo1.jpg" alt="Photo" />
+    <div id="photoMessage">Our first memory together 💖</div>
 
-  <div style="position:absolute;bottom:0;left:0;right:0;">
-    <button class="smallBtn" id="prevBtn">⏮ Prev</button>
-    <button class="smallBtn" id="nextBtn">Next ⏭</button>
+    <div style="position:absolute;bottom:0;left:0;right:0;">
+      <button class="smallBtn" id="prevBtn">⏮ Prev</button>
+      <button class="smallBtn" id="nextBtn">Next ⏭</button>
+    </div>
   </div>
-</div>
 
-<div>
-  <button id="voiceBtn">Hear My Voice</button>
-  <button id="noteBtn">Love Note</button>
-  <button id="themesBtn">Themes</button>
-  <button id="musicBtn">Play Music</button>
+  <div>
+    <button id="voiceBtn">Hear My Voice</button>
+    <button id="noteBtn">Love Note</button>
+    <button id="themesBtn">Themes</button>
+    <button id="musicBtn">Play Music</button>
+  </div>
+
+  <div style="margin:14px auto; max-width:560px; width:92%; background:rgba(255,255,255,0.35); padding:10px 12px; border-radius:14px; font-size:14px;">
+    💕 First kiss<br>
+    ✈️ First trip<br>
+    🐧 First penguin love app<br>
+    ❤️ Forever
+  </div>
 </div>
 
 <audio id="music" src="music.mp3" loop></audio>
@@ -228,29 +291,23 @@ button{
 
 <script>
 (() => {
-  // Show errors instead of white screen
+  // Debug instead of white screen
   const debug = document.getElementById("debug");
-  function showDebug(msg){
-    debug.style.display = "block";
-    debug.textContent = msg;
-  }
-  window.addEventListener("error", (e) => {
-    showDebug("ERROR: " + (e.message || e.error) + "\n" + (e.filename || "") + ":" + (e.lineno || "") );
-  });
-  window.addEventListener("unhandledrejection", (e) => {
-    showDebug("PROMISE ERROR: " + (e.reason?.message || e.reason));
-  });
+  function showDebug(msg){ debug.style.display = "block"; debug.textContent = msg; }
+  window.addEventListener("error", (e) => showDebug("ERROR: " + (e.message||e.error) + "\n" + (e.filename||"") + ":" + (e.lineno||"")));
+  window.addEventListener("unhandledrejection", (e) => showDebug("PROMISE ERROR: " + (e.reason?.message || e.reason)));
 
-  /* ================== EDIT THESE ================== */
   const SECRET = "love";
-  let photoSpeed = 9000; // ms (slower = bigger). example: 12000
-  /* =============================================== */
+  let photoSpeed = 9000;
 
   // DOM
   const lock = document.getElementById("lock");
   const pw = document.getElementById("pw");
   const status = document.getElementById("status");
   const enterBtn = document.getElementById("enterBtn");
+
+  const app = document.getElementById("app");
+  const floatLayer = document.getElementById("floatLayer");
 
   const music = document.getElementById("music");
   const voice = document.getElementById("voice");
@@ -272,30 +329,24 @@ button{
   const themeSheet = document.getElementById("themeSheet");
   const closeSheetBtn = document.getElementById("closeSheetBtn");
 
-  // THEMES (colors + floaties)
+  // THEMES
   const THEMES = [
     {
-      name:"🐧 Penguin",
-      bg1:"#b3e5fc", bg2:"#e1f5fe",
-      accent:"#1565c0", text:"#0b1b2b",
-      font:'"Trebuchet MS", Arial, sans-serif',
-      msgBg:"rgba(21,101,192,0.45)",
+      bg1:"#b3e5fc", bg2:"#e1f5fe", accent:"#1565c0", text:"#0b1b2b",
+      font:'"Trebuchet MS", Arial, sans-serif', msgBg:"rgba(21,101,192,0.45)",
+      frameGlow:"rgba(33,150,243,0.55)", frameInset:"rgba(255,255,255,0.45)",
       floats:["🐧","❄️","✨","❄️","✨"]
     },
     {
-      name:"❤️ Heart",
-      bg1:"#ffd6e8", bg2:"#fff0f7",
-      accent:"#ff4081", text:"#2a0b14",
-      font:'"Comic Sans MS", cursive',
-      msgBg:"rgba(255,64,129,0.45)",
+      bg1:"#ffd6e8", bg2:"#fff0f7", accent:"#ff4081", text:"#2a0b14",
+      font:'"Comic Sans MS", cursive', msgBg:"rgba(255,64,129,0.45)",
+      frameGlow:"rgba(255,64,129,0.55)", frameInset:"rgba(255,255,255,0.35)",
       floats:["❤️","💖","✨","💖","❤️"]
     },
     {
-      name:"🍷 Wine",
-      bg1:"#2b0b17", bg2:"#4b1230",
-      accent:"#c2185b", text:"#fff5f8",
-      font:'Georgia, "Times New Roman", serif',
-      msgBg:"rgba(194,24,91,0.45)",
+      bg1:"#2b0b17", bg2:"#4b1230", accent:"#c2185b", text:"#fff5f8",
+      font:'Georgia, "Times New Roman", serif', msgBg:"rgba(194,24,91,0.45)",
+      frameGlow:"rgba(194,24,91,0.70)", frameInset:"rgba(0,0,0,0.35)",
       floats:["🍷","🍷","🍷","🥂","✨","🍷","🥂"]
     }
   ];
@@ -309,11 +360,13 @@ button{
     document.documentElement.style.setProperty("--text", t.text);
     document.documentElement.style.setProperty("--font", t.font);
     document.documentElement.style.setProperty("--msgBg", t.msgBg);
+    document.documentElement.style.setProperty("--frameGlow", t.frameGlow);
+    document.documentElement.style.setProperty("--frameInset", t.frameInset);
     themeIndex = idx;
   }
   applyTheme(themeIndex);
 
-  // Photos (9)
+  // Photos
   const photos = [
     {src:"photo1.jpg", msg:"Our first memory together 💖"},
     {src:"photo2.jpg", msg:"Adventure on our first trip ✈️"},
@@ -325,14 +378,12 @@ button{
     {src:"photo8.jpg", msg:"Another beautiful memory 💕"},
     {src:"photo9.jpg", msg:"One of my favorite moments with you ❤️"}
   ];
-
   let photoIndex = 0;
   let autoRotate = null;
 
   function showPhoto(index){
     gallery.style.opacity = 0;
     photoMessage.style.opacity = 0;
-
     setTimeout(() => {
       gallery.src = photos[index].src;
       photoMessage.textContent = photos[index].msg;
@@ -341,7 +392,6 @@ button{
       photoIndex = index;
     }, 650);
   }
-
   function nextPhoto(){ showPhoto((photoIndex + 1) % photos.length); }
   function prevPhoto(){ showPhoto((photoIndex - 1 + photos.length) % photos.length); }
 
@@ -350,10 +400,13 @@ button{
     autoRotate = setInterval(nextPhoto, photoSpeed);
   }
 
-  // Floaties: drift + spin + burst
+  // Floaties (throttled + capped for smooth scrolling)
   let floatTimer = null;
+  const MAX_FLOATS = 28;
 
   function spawnFloat(xPercent=null, burst=false){
+    if(floatLayer.childElementCount >= MAX_FLOATS) return;
+
     const t = THEMES[themeIndex];
     const f = document.createElement("div");
     f.className = "float";
@@ -365,11 +418,11 @@ button{
     const size = burst ? (20 + Math.random()*26) : (16 + Math.random()*22);
     f.style.fontSize = size + "px";
 
-    document.body.appendChild(f);
+    floatLayer.appendChild(f);
 
-    const drift = (Math.random()*80 - 40);       // px sideways
-    const spin  = (Math.random()*240 - 120);     // deg
-    const dur   = burst ? (3.5 + Math.random()*1.5) : (5.0 + Math.random()*2.0);
+    const drift = (Math.random()*80 - 40);
+    const spin  = (Math.random()*240 - 120);
+    const dur   = burst ? (3.2 + Math.random()*1.4) : (5.2 + Math.random()*1.8);
 
     f.animate(
       [
@@ -384,14 +437,14 @@ button{
 
   function startFloaties(){
     if(floatTimer) return;
-    floatTimer = setInterval(() => spawnFloat(), 550);
+    floatTimer = setInterval(() => spawnFloat(), 800); // slower = smoother scrolling
   }
 
   function burstAtPenguin(){
     const base = 50 + (Math.random()*6 - 3);
-    for(let k=0; k<14; k++){
+    for(let k=0; k<12; k++){
       const x = base + (Math.random()*14 - 7);
-      setTimeout(()=>spawnFloat(x, true), k*35);
+      setTimeout(()=>spawnFloat(x, true), k*40);
     }
   }
 
@@ -415,7 +468,7 @@ button{
   setInterval(updateCountdown, 60000);
   updateCountdown();
 
-  // Music toggle + voice
+  // Music + Voice
   function toggleMusic(){
     if(music.paused){
       music.play().catch(()=>{});
@@ -425,7 +478,6 @@ button{
       musicBtn.textContent = "Play Music";
     }
   }
-
   function playVoice(){
     if(!music.paused){
       music.pause();
@@ -435,6 +487,7 @@ button{
     voice.play().catch(()=>{});
   }
 
+  // Notes
   function loveNote(){
     const notes = [
       "You are my favorite person ❤️",
@@ -461,14 +514,8 @@ button{
   // Unlock
   function unlock(){
     const typed = (pw.value || "").trim();
-    if(!typed){
-      status.textContent = "Type the password first 🙂";
-      return;
-    }
-    if(typed !== SECRET){
-      status.textContent = "Wrong password. Try again 💖";
-      return;
-    }
+    if(!typed){ status.textContent = "Type the password first 🙂"; return; }
+    if(typed !== SECRET){ status.textContent = "Wrong password. Try again 💖"; return; }
 
     status.textContent = "";
     lock.style.display = "none";
@@ -476,14 +523,17 @@ button{
     startFloaties();
     startAutoRotate();
 
-    // start music on unlock (user gesture)
+    // iOS gesture → start music
     if(music.paused){
       music.play().catch(()=>{});
       musicBtn.textContent = "Pause Music";
     }
+
+    // Smooth start: scroll to top
+    app.scrollTo({ top: 0, behavior: "instant" });
   }
 
-  // Wire events
+  // Events
   enterBtn.addEventListener("click", unlock);
   pw.addEventListener("keydown", (e)=>{ if(e.key === "Enter") unlock(); });
 
@@ -507,7 +557,6 @@ button{
       closeThemeSheet();
     });
   });
-
 })();
 </script>
 
